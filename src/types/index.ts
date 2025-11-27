@@ -18,6 +18,7 @@ export interface UserPreferences {
   notificationsEnabled: boolean;
   voiceEnabled: boolean;
   language: string;
+  alarmSound?: string;
 }
 
 export interface Medicine {

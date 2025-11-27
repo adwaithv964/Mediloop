@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { LogIn } from 'lucide-react';
+import { UserRole } from '../../types';
 import { useAuthStore } from '../../store/useAuthStore';
 import { db } from '../../db';
 import toast from 'react-hot-toast';
@@ -98,14 +99,12 @@ export default function Login() {
             onChange={(e) =>
               setFormData({
                 ...formData,
-                role: e.target.value as any,
+                role: e.target.value as UserRole,
               })
             }
           >
             <option value="patient">Patient</option>
-            <option value="ngo">NGO</option>
-            <option value="hospital">Hospital</option>
-            <option value="admin">Admin</option>
+            <option value="ngo">NGO/Hospital</option>
           </select>
         </div>
 

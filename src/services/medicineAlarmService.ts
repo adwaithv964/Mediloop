@@ -6,10 +6,16 @@ class MedicineAlarmService {
   private checkInterval: NodeJS.Timeout | null = null;
   // Alarm audio generated on-demand using Web Audio API
   private activeAlarms: Set<string> = new Set();
+  private currentSoundId: string = 'mediloop';
 
   constructor() {
     // Create alarm sound (using Web Audio API to generate beep)
     this.initializeAlarmSound();
+  }
+
+  setAlarmSound(soundId: string) {
+    this.currentSoundId = soundId;
+    console.log(`🔔 Alarm sound set to: ${soundId}`);
   }
 
   private initializeAlarmSound() {
@@ -23,55 +29,74 @@ class MedicineAlarmService {
 
   private playAlarmSound() {
     try {
-      // Create a simple beep using Web Audio API
       const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
       const audioCtx = new AudioContext();
-      
-      // Create oscillator for beep sound
-      const oscillator = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-      
-      // Configure beep: 800Hz frequency, 0.3 second duration
-      oscillator.frequency.value = 800;
-      oscillator.type = 'sine';
-      
-      gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-      
-      oscillator.start(audioCtx.currentTime);
-      oscillator.stop(audioCtx.currentTime + 0.3);
-      
-      // Play three beeps
-      setTimeout(() => {
-        const osc2 = audioCtx.createOscillator();
-        const gain2 = audioCtx.createGain();
-        osc2.connect(gain2);
-        gain2.connect(audioCtx.destination);
-        osc2.frequency.value = 800;
-        osc2.type = 'sine';
-        gain2.gain.setValueAtTime(0.3, audioCtx.currentTime);
-        gain2.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-        osc2.start(audioCtx.currentTime);
-        osc2.stop(audioCtx.currentTime + 0.3);
-      }, 400);
-      
-      setTimeout(() => {
-        const osc3 = audioCtx.createOscillator();
-        const gain3 = audioCtx.createGain();
-        osc3.connect(gain3);
-        gain3.connect(audioCtx.destination);
-        osc3.frequency.value = 800;
-        osc3.type = 'sine';
-        gain3.gain.setValueAtTime(0.3, audioCtx.currentTime);
-        gain3.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-        osc3.start(audioCtx.currentTime);
-        osc3.stop(audioCtx.currentTime + 0.3);
-      }, 800);
-      
-      console.log('🔔 Alarm sound played');
+
+      const playNote = (frequency: number, startTime: number, duration: number, type: OscillatorType = 'sine') => {
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        oscillator.type = type;
+        oscillator.frequency.value = frequency;
+
+        // Gentle envelope
+        gainNode.gain.setValueAtTime(0, startTime);
+        gainNode.gain.linearRampToValueAtTime(0.3, startTime + 0.05);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+
+        oscillator.start(startTime);
+        oscillator.stop(startTime + duration);
+      };
+
+      const now = audioCtx.currentTime;
+
+      switch (this.currentSoundId) {
+        case 'beep':
+          // Gentle Beep
+          playNote(800, now, 0.3);
+          playNote(800, now + 0.4, 0.3);
+          playNote(800, now + 0.8, 0.3);
+          console.log('🔔 Gentle Beep played');
+          break;
+
+        case 'crystal':
+          // Crystal Bell (High pitched, clear)
+          playNote(1567.98, now, 2.0); // G6
+          playNote(1975.53, now + 0.2, 2.0); // B6
+          console.log('🔔 Crystal sound played');
+          break;
+
+        case 'cosmic':
+          // Cosmic Sweep
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(400, now);
+          osc.frequency.exponentialRampToValueAtTime(1200, now + 1.0);
+
+          gain.gain.setValueAtTime(0, now);
+          gain.gain.linearRampToValueAtTime(0.2, now + 0.1);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 1.5);
+
+          osc.start(now);
+          osc.stop(now + 1.5);
+          console.log('🔔 Cosmic sound played');
+          break;
+
+        case 'mediloop':
+        default:
+          // Mediloop Theme: Soft Double Chime (E5 -> B5)
+          playNote(659.25, now, 0.6);
+          playNote(987.77, now + 0.15, 1.2);
+          console.log('🔔 Mediloop chime played');
+          break;
+      }
     } catch (error) {
       console.error('Error playing alarm sound:', error);
     }
@@ -86,10 +111,10 @@ class MedicineAlarmService {
     // Check immediately
     await this.checkMedicineSchedules(userId);
 
-    // Then check every minute
+    // Then check every 5 seconds (reduced from 1 minute to minimize delay)
     this.checkInterval = setInterval(async () => {
       await this.checkMedicineSchedules(userId);
-    }, 60000); // Check every 1 minute
+    }, 5000); // Check every 5 seconds
   }
 
   stopMonitoring() {
@@ -174,12 +199,12 @@ class MedicineAlarmService {
   private isScheduledForToday(schedule: MedicineSchedule, _currentDay: number): boolean {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    
+
     // Check if schedule has started
     const startDate = new Date(schedule.startDate);
     startDate.setHours(0, 0, 0, 0);
     if (today < startDate) return false;
-    
+
     // Check if schedule has ended
     if (schedule.endDate) {
       const endDate = new Date(schedule.endDate);
@@ -188,7 +213,7 @@ class MedicineAlarmService {
     }
 
     if (!schedule.frequency || schedule.frequency === 'daily') return true;
-    
+
     if (schedule.frequency === 'custom') {
       // For custom schedules, check specific days
       // This would need to be implemented based on your custom schedule logic
@@ -230,7 +255,7 @@ class MedicineAlarmService {
       'Test Alarm',
       `This is a test alarm for ${medicineName}`
     );
-    
+
     // Trigger mobile-style notification for test
     const now = new Date();
     const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;

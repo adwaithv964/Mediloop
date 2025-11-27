@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { ShieldCheck, AlertTriangle, CheckCircle, Info, Pill } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { db } from '../../db';
+import { geminiAPI } from '../../services/geminiAPI';
 import toast from 'react-hot-toast';
 
 export default function DrugInteractions() {
@@ -9,6 +10,7 @@ export default function DrugInteractions() {
   const [medicines, setMedicines] = useState<any[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
   const [interactions, setInteractions] = useState<any[]>([]);
+  const [analysis, setAnalysis] = useState<string>('');
   const [checking, setChecking] = useState(false);
 
   useEffect(() => {
@@ -28,22 +30,61 @@ export default function DrugInteractions() {
     }
 
     setChecking(true);
-    
-    // Simulate interaction check (in production, use a real drug interaction API)
-    setTimeout(() => {
-      const mockInteractions = [
-        {
-          severity: 'moderate',
-          medicines: selected.slice(0, 2),
-          description: 'May increase risk of side effects. Monitor closely.',
-          recommendation: 'Take at different times of day (at least 2 hours apart).',
-        },
-      ];
-      
-      setInteractions(selected.length > 1 ? mockInteractions : []);
+    setAnalysis(''); // Clear previous analysis
+
+    try {
+      // Get selected medicine details
+      const selectedMedicines = medicines.filter(m => selected.includes(m.id));
+      const medicineDetails = selectedMedicines.map(m => ({
+        name: m.name,
+        dosage: m.dosage || 'Not specified',
+      }));
+
+      // Check interactions using Gemini API
+      const geminiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      if (geminiKey && geminiKey !== 'your_gemini_api_key_here') {
+        const result = await geminiAPI.checkDrugInteractions(medicineDetails);
+        setInteractions(result.interactions);
+        setAnalysis(result.analysis);
+        setChecking(false);
+
+        if (result.interactions.length > 0) {
+          toast('Found potential interactions', {
+            icon: '⚠️',
+            style: {
+              background: '#fff7ed',
+              color: '#c2410c',
+            },
+          });
+        } else {
+          toast.success('No known interactions detected!');
+        }
+        return;
+      }
+
+      // Fallback if Gemini is not configured
+      const fallbackInteractions = [{
+        severity: 'moderate',
+        medicines: medicineDetails.map(m => m.name),
+        description: 'Potential interactions between multiple medicines. Always consult with healthcare professionals before combining medicines.',
+        recommendation: 'Consult your doctor or pharmacist to verify these medicines are safe to take together. Consider timing, food interactions, and monitoring for side effects.',
+      }];
+
+      const fallbackAnalysis = `Here are common side effects for the medicines you mentioned:\n\n` +
+        medicineDetails.map(m => `* **${m.name}:** Common side effects may include nausea, dizziness, or stomach upset. Consult your doctor for a complete list.`).join('\n') +
+        `\n\n**Always consult a healthcare professional for medical decisions or if you experience any concerning side effects.**`;
+
+      setInteractions(selected.length > 1 ? fallbackInteractions : []);
+      setAnalysis(fallbackAnalysis);
       setChecking(false);
-      toast.success('Interaction check complete!');
-    }, 1500);
+      toast('Using fallback data', {
+        icon: 'ℹ️',
+      });
+    } catch (error) {
+      console.error('Interaction check error:', error);
+      toast.error('Failed to check interactions. Please try again.');
+      setChecking(false);
+    }
   };
 
   const getSeverityColor = (severity: string) => {
@@ -59,6 +100,20 @@ export default function DrugInteractions() {
     setSelected(prev =>
       prev.includes(id) ? prev.filter(m => m !== id) : [...prev, id]
     );
+  };
+
+  // Helper to render text with bold markers
+  const renderFormattedText = (text: string) => {
+    return text.split('\n').map((line, i) => (
+      <p key={i} className="mb-2 last:mb-0">
+        {line.split(/(\*\*.*?\*\*)/).map((part, j) => {
+          if (part.startsWith('**') && part.endsWith('**')) {
+            return <strong key={j}>{part.slice(2, -2)}</strong>;
+          }
+          return part;
+        })}
+      </p>
+    ));
   };
 
   return (
@@ -83,11 +138,10 @@ export default function DrugInteractions() {
               <button
                 key={med.id}
                 onClick={() => toggle(med.id)}
-                className={`p-4 rounded-lg border-2 transition-all text-left ${
-                  selected.includes(med.id)
-                    ? 'border-orange-600 bg-orange-50 dark:bg-orange-900/20'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-orange-300'
-                }`}
+                className={`p-4 rounded-lg border-2 transition-all text-left ${selected.includes(med.id)
+                  ? 'border-orange-600 bg-orange-50 dark:bg-orange-900/20'
+                  : 'border-gray-200 dark:border-gray-700 hover:border-orange-300'
+                  }`}
               >
                 <div className="flex items-center space-x-2">
                   <Pill className="w-5 h-5 text-orange-600" />
@@ -100,7 +154,7 @@ export default function DrugInteractions() {
             ))}
           </div>
         )}
-        
+
         <button
           onClick={checkInteractions}
           disabled={selected.length < 2 || checking}
@@ -152,6 +206,18 @@ export default function DrugInteractions() {
                 The selected medicines appear to be safe to take together
               </p>
             </div>
+          </div>
+        </div>
+      )}
+
+      {analysis && (
+        <div className="card bg-gray-50 dark:bg-gray-800/50">
+          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <Info className="w-5 h-5 text-blue-600" />
+            Side Effect Analysis
+          </h2>
+          <div className="prose dark:prose-invert max-w-none text-sm text-gray-700 dark:text-gray-300">
+            {renderFormattedText(analysis)}
           </div>
         </div>
       )}

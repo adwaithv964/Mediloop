@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Activity, AlertCircle, CheckCircle, Loader2, Plus, X } from 'lucide-react';
+import { geminiAPI } from '../../services/geminiAPI';
 import toast from 'react-hot-toast';
 
 interface Symptom {
@@ -51,18 +52,29 @@ export default function SymptomChecker() {
     setResult(null);
 
     try {
-      const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-      
-      if (!apiKey || apiKey === 'your_openai_key_here') {
-        // Fallback analysis without AI
-        setTimeout(() => {
-          setResult(getFallbackAnalysis());
-          setAnalyzing(false);
-        }, 1500);
+      // Try Gemini API first
+      const geminiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      if (geminiKey && geminiKey !== 'your_gemini_api_key_here') {
+        const analysis = await geminiAPI.analyzeSymptoms(symptoms);
+
+        setResult({
+          analysis,
+          urgency: getUrgencyLevel(),
+          recommendations: extractRecommendations(analysis),
+        });
+        setAnalyzing(false);
         return;
       }
 
-      const symptomDescription = symptoms.map(s => 
+      // Fallback to OpenAI if Gemini is not configured
+      const openaiKey = import.meta.env.VITE_OPENAI_API_KEY;
+      if (!openaiKey || openaiKey === 'your_openai_key_here') {
+        setResult(getFallbackAnalysis());
+        setAnalyzing(false);
+        return;
+      }
+
+      const symptomDescription = symptoms.map(s =>
         `${s.name} (${s.severity} severity, lasting ${s.duration})`
       ).join(', ');
 
@@ -70,7 +82,7 @@ export default function SymptomChecker() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
+          'Authorization': `Bearer ${openaiKey}`,
         },
         body: JSON.stringify({
           model: 'gpt-3.5-turbo',
@@ -89,11 +101,11 @@ export default function SymptomChecker() {
         }),
       });
 
-      if (!response.ok) throw new Error('API request failed');
+      if (!response.ok) throw new Error('OpenAI API request failed');
 
       const data = await response.json();
       const analysis = data.choices[0]?.message?.content || '';
-      
+
       setResult({
         analysis,
         urgency: getUrgencyLevel(),

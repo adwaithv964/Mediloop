@@ -71,7 +71,7 @@ function App() {
   }, []);
 
   return (
-    <Router>
+    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <Toaster
         position="top-right"
         toastOptions={{
@@ -138,11 +138,11 @@ function App() {
           <Route path="*" element={<Navigate to="/login" replace />} />
         )}
       </Routes>
-      
+
       {/* AI Medicine Assistant - Available globally when logged in */}
       {isAuthenticated && <MedicineAssistant />}
-      
-      <Toaster position="top-right" />
+
+
     </Router>
   );
 }

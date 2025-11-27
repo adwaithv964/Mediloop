@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { MessageCircle, Send, X, Bot, User as UserIcon, Sparkles } from 'lucide-react';
-import { AIService } from '../services/aiService';
+import { geminiAPI } from '../services/geminiAPI';
+import { db } from '../db';
+import { Medicine } from '../types';
 import { useAuthStore } from '../store/useAuthStore';
 import toast from 'react-hot-toast';
 
@@ -18,7 +20,8 @@ export default function MedicineAssistant() {
     {
       id: '1',
       role: 'assistant',
-      content: `Hello ${user?.name || 'there'}! 👋 I'm your AI Medicine Assistant. I can help you with:
+      content: geminiAPI.isConfigured()
+        ? `Hello ${user?.name || 'there'}! 👋 I'm your AI Medicine Assistant powered by Gemini AI. I can help you with:
 
 • Medicine information and usage
 • Side effects and interactions
@@ -26,13 +29,17 @@ export default function MedicineAssistant() {
 • General health advice
 • Understanding prescriptions
 
-How can I assist you today?`,
+How can I assist you today?`
+        : `Hello! 👋 It looks like the Gemini API key hasn't been configured yet. 
+
+To enable AI features, please add your API key to the .env file. Until then, I can only provide limited fallback responses.`,
       timestamp: new Date(),
     },
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [userMedicines, setUserMedicines] = useState<Medicine[]>([]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -41,6 +48,20 @@ How can I assist you today?`,
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  useEffect(() => {
+    loadUserMedicines();
+  }, [user]);
+
+  const loadUserMedicines = async () => {
+    if (!user) return;
+    try {
+      const medicines = await db.medicines.where('userId').equals(user.id).toArray();
+      setUserMedicines(medicines);
+    } catch (error) {
+      console.error('Error loading medicines:', error);
+    }
+  };
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
@@ -57,14 +78,14 @@ How can I assist you today?`,
     setIsLoading(true);
 
     try {
-      const chatMessages = messages.concat(userMessage).map((m) => ({
-        id: m.id,
-        role: m.role,
-        content: m.content,
-        timestamp: m.timestamp,
-      }));
+      // Build context from user's medicines
+      const medicineContext = userMedicines.length > 0
+        ? `User's current medicines: ${userMedicines.map(m => `${m.name} (${m.dosage})`).join(', ')}. `
+        : '';
 
-      const response = await AIService.chat(chatMessages);
+      const context = `${medicineContext}You are a helpful medical assistant providing general health information. Always remind users to consult healthcare professionals for medical decisions. Be concise but informative.`;
+
+      const response = await geminiAPI.generateResponse(input, context);
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -74,12 +95,19 @@ How can I assist you today?`,
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
+      toast.success('Response received');
     } catch (error) {
-      toast.error('Failed to get response. Check your API key in Settings.');
+      console.error('AI Error:', error);
+      toast.error('Failed to get response');
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: "I'm having trouble connecting right now. Please make sure you've configured your OpenAI API key in Settings > AI Assistant.",
+        content: "I'm having trouble connecting right now. Please make sure you've configured your Gemini API key. For now, here's what I can tell you:\n\n" +
+          "• Always take medicines as prescribed by your doctor\n" +
+          "• Never skip doses without consulting your healthcare provider\n" +
+          "• Keep track of side effects and report them\n" +
+          "• Store medicines in a cool, dry place\n\n" +
+          "For specific advice, please consult with your healthcare provider.",
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, errorMessage]);
@@ -113,9 +141,9 @@ How can I assist you today?`,
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 w-96 h-[600px] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl flex flex-col z-50 border border-gray-200 dark:border-gray-700">
+        <div className="fixed inset-0 w-full h-full md:w-96 md:h-[600px] md:bottom-6 md:right-6 md:inset-auto bg-white dark:bg-gray-800 rounded-none md:rounded-2xl shadow-2xl flex flex-col z-[60] border border-gray-200 dark:border-gray-700">
           {/* Header */}
-          <div className="bg-gradient-to-r from-primary-600 to-primary-700 p-4 rounded-t-2xl flex items-center justify-between">
+          <div className="bg-gradient-to-r from-primary-600 to-primary-700 p-4 rounded-none md:rounded-t-2xl flex items-center justify-between shrink-0">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
                 <Bot className="text-white" size={24} />
@@ -141,11 +169,10 @@ How can I assist you today?`,
                 className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-[80%] ${
-                    message.role === 'user'
-                      ? 'bg-primary-600 text-white'
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
-                  } rounded-2xl px-4 py-3`}
+                  className={`max-w-[80%] ${message.role === 'user'
+                    ? 'bg-primary-600 text-white'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
+                    } rounded-2xl px-4 py-3`}
                 >
                   <div className="flex items-start space-x-2 mb-1">
                     {message.role === 'assistant' ? (

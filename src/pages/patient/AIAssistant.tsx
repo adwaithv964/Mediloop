@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Send, Sparkles, Loader2, Bot, User, Pill, AlertCircle } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { db } from '../../db';
+import { geminiAPI } from '../../services/geminiAPI';
 import toast from 'react-hot-toast';
 
 interface Message {
@@ -33,10 +34,10 @@ export default function AIAssistant() {
 
   const loadUserContext = async () => {
     if (!user) return;
-    
+
     const medicines = await db.medicines.where('userId').equals(user.id).toArray();
     const schedules = await db.schedules.where('userId').equals(user.id).toArray();
-    
+
     setContext({
       medicineCount: medicines.length,
       medicines: medicines.map(m => ({ name: m.name, dosage: m.dosage })),
@@ -46,10 +47,22 @@ export default function AIAssistant() {
 
   const getAIResponse = async (userMessage: string): Promise<string> => {
     try {
-      const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-      
-      if (!apiKey || apiKey === 'your_openai_key_here') {
-        return "I'm here to help! However, the OpenAI API key is not configured. Here's what I can tell you:\n\n" +
+      // First try Gemini API (primary)
+      const geminiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      if (geminiKey && geminiKey !== 'your_gemini_api_key_here') {
+        const systemPrompt = `You are a helpful medical assistant. The user has ${context?.medicineCount || 0} medicines in their system.
+Current medicines: ${context?.medicines?.map((m: any) => m.name).join(', ') || 'None'}.
+Provide helpful, accurate health information. Always remind users to consult healthcare professionals for medical decisions.
+Be concise but informative.`;
+
+        const fullPrompt = `${systemPrompt}\n\nUser question: ${userMessage}`;
+        return await geminiAPI.generateResponse(fullPrompt);
+      }
+
+      // Fallback to OpenAI if Gemini is not configured
+      const openaiKey = import.meta.env.VITE_OPENAI_API_KEY;
+      if (!openaiKey || openaiKey === 'your_openai_key_here') {
+        return "I'm here to help! However, neither Gemini nor OpenAI API keys are configured. Here's what I can tell you:\n\n" +
           "• Always take medicines as prescribed by your doctor\n" +
           "• Never skip doses without consulting your healthcare provider\n" +
           "• Keep track of side effects and report them\n" +
@@ -58,7 +71,8 @@ export default function AIAssistant() {
           "For specific medical advice, please consult your healthcare provider.";
       }
 
-      const systemPrompt = `You are a helpful medical assistant. The user has ${context?.medicineCount || 0} medicines in their system. 
+      // OpenAI fallback
+      const systemPrompt = `You are a helpful medical assistant. The user has ${context?.medicineCount || 0} medicines in their system.
 Current medicines: ${context?.medicines?.map((m: any) => m.name).join(', ') || 'None'}.
 Provide helpful, accurate health information. Always remind users to consult healthcare professionals for medical decisions.
 Be concise but informative.`;
@@ -67,7 +81,7 @@ Be concise but informative.`;
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
+          'Authorization': `Bearer ${openaiKey}`,
         },
         body: JSON.stringify({
           model: 'gpt-3.5-turbo',
@@ -82,7 +96,7 @@ Be concise but informative.`;
       });
 
       if (!response.ok) {
-        throw new Error('API request failed');
+        throw new Error('OpenAI API request failed');
       }
 
       const data = await response.json();
@@ -109,7 +123,7 @@ Be concise but informative.`;
 
     try {
       const aiResponse = await getAIResponse(input.trim());
-      
+
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
@@ -140,22 +154,22 @@ Be concise but informative.`;
   ];
 
   return (
-    <div className="h-[calc(100vh-8rem)] flex flex-col">
+    <div className="h-[calc(100vh-5rem)] md:h-[calc(100vh-8rem)] flex flex-col">
       {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6 rounded-t-xl">
+      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4 md:p-6 rounded-t-xl shrink-0">
         <div className="flex items-center space-x-3">
-          <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-            <Sparkles className="w-6 h-6" />
+          <div className="w-10 h-10 md:w-12 md:h-12 bg-white/20 rounded-lg flex items-center justify-center">
+            <Sparkles className="w-5 h-5 md:w-6 md:h-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">AI Health Assistant</h1>
-            <p className="text-indigo-100">Get personalized health guidance powered by AI</p>
+            <h1 className="text-xl md:text-2xl font-bold">AI Health Assistant</h1>
+            <p className="text-sm md:text-base text-indigo-100">Get personalized health guidance powered by AI</p>
           </div>
         </div>
 
         {/* Context Info */}
         {context && (
-          <div className="mt-4 flex items-center space-x-4 text-sm">
+          <div className="mt-4 flex flex-col md:flex-row md:items-center space-y-2 md:space-y-0 md:space-x-4 text-xs md:text-sm">
             <div className="flex items-center space-x-2">
               <Pill className="w-4 h-4" />
               <span>{context.medicineCount} medicines tracked</span>
@@ -169,34 +183,31 @@ Be concise but informative.`;
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50 dark:bg-gray-900">
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 bg-gray-50 dark:bg-gray-900">
         {messages.map((message) => (
           <div
             key={message.id}
             className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             <div
-              className={`flex items-start space-x-3 max-w-3xl ${
-                message.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''
-              }`}
+              className={`flex items-start space-x-3 max-w-[85%] md:max-w-3xl ${message.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''
+                }`}
             >
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                  message.role === 'user'
+                className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${message.role === 'user'
                     ? 'bg-primary-600 text-white'
                     : 'bg-indigo-600 text-white'
-                }`}
+                  }`}
               >
                 {message.role === 'user' ? <User size={18} /> : <Bot size={18} />}
               </div>
               <div
-                className={`px-4 py-3 rounded-lg ${
-                  message.role === 'user'
+                className={`px-4 py-3 rounded-lg ${message.role === 'user'
                     ? 'bg-primary-600 text-white'
                     : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700'
-                }`}
+                  }`}
               >
-                <p className="whitespace-pre-wrap">{message.content}</p>
+                <p className="whitespace-pre-wrap text-sm md:text-base">{message.content}</p>
                 <p className="text-xs mt-2 opacity-70">
                   {message.timestamp.toLocaleTimeString()}
                 </p>
@@ -222,14 +233,14 @@ Be concise but informative.`;
 
       {/* Quick Prompts */}
       {messages.length <= 1 && (
-        <div className="p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+        <div className="p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shrink-0">
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Quick questions:</p>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex overflow-x-auto pb-2 md:pb-0 gap-2 no-scrollbar">
             {quickPrompts.map((prompt, index) => (
               <button
                 key={index}
                 onClick={() => setInput(prompt)}
-                className="text-sm px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
+                className="text-sm px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors whitespace-nowrap flex-shrink-0"
               >
                 {prompt}
               </button>

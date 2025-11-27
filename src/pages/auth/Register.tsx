@@ -136,9 +136,7 @@ export default function Register() {
             }
           >
             <option value="patient">Patient</option>
-            <option value="ngo">NGO</option>
-            <option value="hospital">Hospital</option>
-            <option value="admin">Admin</option>
+            <option value="ngo">NGO/Hospital</option>
           </select>
         </div>
 

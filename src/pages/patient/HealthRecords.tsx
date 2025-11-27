@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FileText, Trash2, Eye, FolderHeart, Plus } from 'lucide-react';
+import { FileText, Trash2, Eye, FolderHeart, Plus, Edit2 } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { db } from '../../db';
 import toast from 'react-hot-toast';
@@ -20,11 +20,14 @@ export default function HealthRecords() {
   const { user } = useAuthStore();
   const [records, setRecords] = useState<HealthRecord[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [newRecord, setNewRecord] = useState({
     title: '',
     type: 'prescription' as HealthRecord['type'],
     notes: '',
     date: new Date().toISOString().split('T')[0],
+    fileUrl: '',
+    fileName: ''
   });
 
   useEffect(() => {
@@ -40,9 +43,18 @@ export default function HealthRecords() {
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // In production, upload to cloud storage
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        toast.error('File size should be less than 5MB');
+        return;
+      }
+
       const reader = new FileReader();
       reader.onloadend = () => {
+        setNewRecord(prev => ({
+          ...prev,
+          fileUrl: reader.result as string,
+          fileName: file.name
+        }));
         toast.success(`File "${file.name}" ready to upload`);
       };
       reader.readAsDataURL(file);
@@ -55,21 +67,76 @@ export default function HealthRecords() {
       return;
     }
 
-    const record: HealthRecord = {
-      id: `record-${Date.now()}`,
-      userId: user.id,
-      title: newRecord.title,
-      type: newRecord.type,
-      notes: newRecord.notes,
-      date: new Date(newRecord.date),
-      createdAt: new Date(),
-    };
+    try {
+      if (editingId) {
+        await db.healthRecords.update(editingId, {
+          title: newRecord.title,
+          type: newRecord.type,
+          notes: newRecord.notes,
+          date: new Date(newRecord.date),
+          fileUrl: newRecord.fileUrl,
+          fileName: newRecord.fileName
+        });
+        toast.success('Health record updated!');
+      } else {
+        const record: HealthRecord = {
+          id: `record-${Date.now()}`,
+          userId: user.id,
+          title: newRecord.title,
+          type: newRecord.type,
+          notes: newRecord.notes,
+          date: new Date(newRecord.date),
+          createdAt: new Date(),
+          fileUrl: newRecord.fileUrl,
+          fileName: newRecord.fileName
+        };
+        await db.healthRecords.add(record as any);
+        toast.success('Health record added!');
+      }
 
-    await db.healthRecords.add(record as any);
-    toast.success('Health record added!');
+      closeModal();
+      loadRecords();
+    } catch (error) {
+      console.error('Error saving record:', error);
+      toast.error('Failed to save record');
+    }
+  };
+
+  const handleEdit = (record: HealthRecord) => {
+    setEditingId(record.id);
+    setNewRecord({
+      title: record.title,
+      type: record.type,
+      notes: record.notes || '',
+      date: new Date(record.date).toISOString().split('T')[0],
+      fileUrl: record.fileUrl || '',
+      fileName: record.fileName || ''
+    });
+    setShowAddModal(true);
+  };
+
+  const closeModal = () => {
     setShowAddModal(false);
-    setNewRecord({ title: '', type: 'prescription', notes: '', date: new Date().toISOString().split('T')[0] });
-    loadRecords();
+    setEditingId(null);
+    setNewRecord({
+      title: '',
+      type: 'prescription',
+      notes: '',
+      date: new Date().toISOString().split('T')[0],
+      fileUrl: '',
+      fileName: ''
+    });
+  };
+
+  const handleView = (url?: string) => {
+    if (url) {
+      const newWindow = window.open();
+      if (newWindow) {
+        newWindow.document.write(`<iframe src="${url}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`);
+      }
+    } else {
+      toast.error('No file attached to this record');
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -132,9 +199,19 @@ export default function HealthRecords() {
                 Date: {new Date(record.date).toLocaleDateString()}
               </p>
               <div className="flex space-x-2">
-                <button className="btn btn-sm bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 flex-1">
+                <button
+                  onClick={() => handleView(record.fileUrl)}
+                  className="btn btn-sm bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 flex-1"
+                  disabled={!record.fileUrl}
+                >
                   <Eye className="w-4 h-4 mr-1" />
                   View
+                </button>
+                <button
+                  onClick={() => handleEdit(record)}
+                  className="btn btn-sm bg-blue-100 text-blue-600 hover:bg-blue-200"
+                >
+                  <Edit2 className="w-4 h-4" />
                 </button>
                 <button onClick={() => handleDelete(record.id)} className="btn btn-sm bg-red-100 text-red-600 hover:bg-red-200">
                   <Trash2 className="w-4 h-4" />
@@ -148,7 +225,7 @@ export default function HealthRecords() {
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="card max-w-lg w-full">
-            <h2 className="text-xl font-bold mb-4">Add Health Record</h2>
+            <h2 className="text-xl font-bold mb-4">{editingId ? 'Edit Health Record' : 'Add Health Record'}</h2>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-1">Title *</label>
@@ -195,11 +272,14 @@ export default function HealthRecords() {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Upload File (Optional)</label>
-                <input type="file" onChange={handleFileUpload} className="input w-full" accept=".pdf,.jpg,.png" />
+                <input type="file" onChange={handleFileUpload} className="input w-full" accept=".pdf,.jpg,.png,.jpeg" />
+                {newRecord.fileName && (
+                  <p className="text-sm text-green-600 mt-1">Selected: {newRecord.fileName}</p>
+                )}
               </div>
             </div>
             <div className="flex space-x-3 mt-6">
-              <button onClick={() => setShowAddModal(false)} className="btn flex-1">Cancel</button>
+              <button onClick={closeModal} className="btn flex-1">Cancel</button>
               <button onClick={handleSave} className="btn btn-primary flex-1">Save Record</button>
             </div>
           </div>

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Sparkles, Heart, Pill, Apple, Activity, Brain, Sun, Moon } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { db } from '../../db';
+import { geminiAPI } from '../../services/geminiAPI';
 
 interface Tip {
   id: string;
@@ -17,6 +18,7 @@ export default function HealthTips() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [tips, setTips] = useState<Tip[]>([]);
   const [userMedicines, setUserMedicines] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     loadUserMedicines();
@@ -29,7 +31,33 @@ export default function HealthTips() {
     setUserMedicines(meds);
   };
 
-  const generateTips = () => {
+  const generateTips = async () => {
+    setLoading(true);
+    try {
+      // Try to generate AI-powered tips using Gemini
+      const geminiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      if (geminiKey && geminiKey !== 'your_gemini_api_key_here') {
+        const aiTips = await geminiAPI.generateHealthTips(undefined, userMedicines);
+
+        // Convert AI tips to the expected format with icons and colors
+        const formattedTips: Tip[] = aiTips.map((tip, index) => ({
+          id: `ai-${index}`,
+          category: tip.category as any,
+          title: tip.title,
+          content: tip.content,
+          icon: getCategoryIcon(tip.category),
+          color: getCategoryColor(tip.category),
+        }));
+
+        setTips(formattedTips);
+        setLoading(false);
+        return;
+      }
+    } catch (error) {
+      console.error('AI tip generation failed:', error);
+    }
+
+    // Fallback to static tips if AI fails or is not configured
     const allTips: Tip[] = [
       // Medicine Tips
       {
@@ -205,6 +233,31 @@ export default function HealthTips() {
     ];
 
     setTips(allTips);
+    setLoading(false);
+  };
+
+  const getCategoryIcon = (category: string) => {
+    const icons: any = {
+      medicine: Pill,
+      nutrition: Apple,
+      exercise: Activity,
+      sleep: Moon,
+      mental: Brain,
+      general: Heart,
+    };
+    return icons[category] || Sparkles;
+  };
+
+  const getCategoryColor = (category: string) => {
+    const colors: any = {
+      medicine: 'bg-purple-100 dark:bg-purple-900/20 text-purple-600',
+      nutrition: 'bg-green-100 dark:bg-green-900/20 text-green-600',
+      exercise: 'bg-blue-100 dark:bg-blue-900/20 text-blue-600',
+      sleep: 'bg-indigo-100 dark:bg-indigo-900/20 text-indigo-600',
+      mental: 'bg-pink-100 dark:bg-pink-900/20 text-pink-600',
+      general: 'bg-red-100 dark:bg-red-900/20 text-red-600',
+    };
+    return colors[category] || 'bg-gray-100 dark:bg-gray-900/20 text-gray-600';
   };
 
   const categories = [
@@ -271,7 +324,7 @@ export default function HealthTips() {
                 Your Medicine Profile
               </h3>
               <p className="text-sm text-blue-800 dark:text-blue-200">
-                You're managing {userMedicines.length} medicine{userMedicines.length !== 1 ? 's' : ''}. 
+                You're managing {userMedicines.length} medicine{userMedicines.length !== 1 ? 's' : ''}.
                 Keep up the great work with your treatment adherence! Check the Medicine tips below for best practices.
               </p>
             </div>
