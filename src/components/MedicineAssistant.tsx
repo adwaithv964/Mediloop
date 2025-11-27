@@ -63,7 +63,8 @@ To enable AI features, please add your API key to the .env file. Until then, I c
     }
   };
 
-  const handleSend = async () => {
+  const handleSend = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     if (!input.trim() || isLoading) return;
 
     const userMessage: Message = {
@@ -226,24 +227,24 @@ To enable AI features, please add your API key to the .env file. Until then, I c
 
           {/* Input */}
           <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-            <div className="flex space-x-2">
+            <form onSubmit={handleSend} className="flex space-x-2">
               <input
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSend()}
                 placeholder="Ask about medicines..."
                 className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 disabled={isLoading}
+                enterKeyHint="send"
               />
               <button
-                onClick={handleSend}
+                type="submit"
                 disabled={!input.trim() || isLoading}
-                className="w-10 h-10 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-full flex items-center justify-center transition-colors"
+                className="w-10 h-10 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-full flex items-center justify-center transition-colors flex-shrink-0"
               >
                 <Send size={18} />
               </button>
-            </div>
+            </form>
           </div>
         </div>
       )}

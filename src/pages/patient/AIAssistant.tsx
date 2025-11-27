@@ -107,7 +107,8 @@ Be concise but informative.`;
     }
   };
 
-  const handleSend = async () => {
+  const handleSend = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     if (!input.trim() || loading) return;
 
     const userMessage: Message = {
@@ -154,7 +155,7 @@ Be concise but informative.`;
   ];
 
   return (
-    <div className="h-[calc(100vh-5rem)] md:h-[calc(100vh-8rem)] flex flex-col">
+    <div className="h-[calc(100dvh-5rem)] md:h-[calc(100vh-8rem)] flex flex-col">
       {/* Header */}
       <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4 md:p-6 rounded-t-xl shrink-0">
         <div className="flex items-center space-x-3">
@@ -195,16 +196,16 @@ Be concise but informative.`;
             >
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${message.role === 'user'
-                    ? 'bg-primary-600 text-white'
-                    : 'bg-indigo-600 text-white'
+                  ? 'bg-primary-600 text-white'
+                  : 'bg-indigo-600 text-white'
                   }`}
               >
                 {message.role === 'user' ? <User size={18} /> : <Bot size={18} />}
               </div>
               <div
                 className={`px-4 py-3 rounded-lg ${message.role === 'user'
-                    ? 'bg-primary-600 text-white'
-                    : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700'
+                  ? 'bg-primary-600 text-white'
+                  : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700'
                   }`}
               >
                 <p className="whitespace-pre-wrap text-sm md:text-base">{message.content}</p>
@@ -251,24 +252,25 @@ Be concise but informative.`;
 
       {/* Input */}
       <div className="p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 rounded-b-xl">
-        <div className="flex items-end space-x-3">
+        <form onSubmit={handleSend} className="flex items-end space-x-3">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
+            onKeyDown={handleKeyPress}
             placeholder="Ask me anything about your health and medicines..."
             className="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white resize-none"
-            rows={2}
+            rows={1}
+            style={{ minHeight: '48px', maxHeight: '120px' }}
             disabled={loading}
           />
           <button
-            onClick={handleSend}
+            type="submit"
             disabled={!input.trim() || loading}
-            className="btn btn-primary h-12 px-6 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn btn-primary h-12 px-6 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
           >
             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
           </button>
-        </div>
+        </form>
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
           💡 Tip: Press Enter to send, Shift+Enter for new line
         </p>
