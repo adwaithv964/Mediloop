@@ -1,6 +1,8 @@
 import { Medicine, MedicineSchedule, User } from '../types';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+import { API_URL as BASE_URL } from '../config/api';
+
+const API_URL = `${BASE_URL}/api`;
 
 export const FamilyService = {
     async linkAccount(userId: string, familyCode: string): Promise<{ success: boolean; message: string; dependent?: User }> {
