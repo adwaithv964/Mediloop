@@ -46,6 +46,7 @@ export default function NGODashboard() {
   const [recentDonations, setRecentDonations] = useState<Donation[]>([]);
   const [urgentDonations, setUrgentDonations] = useState<Donation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [ngoProfile, setNgoProfile] = useState<any>(null);
 
   useEffect(() => {
     if (user) {
@@ -61,7 +62,10 @@ export default function NGODashboard() {
       // Auto-register/Check NGO profile
       try {
         const ngoProfileRes = await fetch(`${API_URL}/api/ngos/${user?.id}`);
-        if (ngoProfileRes.status === 404 && user) {
+        if (ngoProfileRes.ok) {
+          const profile = await ngoProfileRes.json();
+          setNgoProfile(profile);
+        } else if (ngoProfileRes.status === 404 && user) {
           // Create default profile for this user
           await fetch(`${API_URL}/api/ngos`, {
             method: 'POST',
@@ -76,6 +80,17 @@ export default function NGODashboard() {
               location: { lat: 28.7041, lng: 77.1025 },
               createdAt: new Date()
             })
+          });
+          // Set default profile to state
+          setNgoProfile({
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            phone: user.phone || '+91-0000000000',
+            address: user.address || 'Delhi, India',
+            verified: true,
+            location: { lat: 28.7041, lng: 77.1025 },
+            createdAt: new Date()
           });
           toast.success("NGO Profile Created Successfully");
         }
@@ -223,7 +238,7 @@ export default function NGODashboard() {
             </div>
             <div>
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                {user?.name || 'NGO Organization'}
+                {ngoProfile?.name || user?.name || 'NGO Organization'}
               </h2>
               <p className="text-gray-600 dark:text-gray-400">
                 Making healthcare accessible to all
@@ -231,15 +246,15 @@ export default function NGODashboard() {
               <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
                 <div className="flex items-center space-x-1">
                   <MapPin size={14} />
-                  <span>Delhi, India</span>
+                  <span>{ngoProfile?.address || user?.address || 'Location not set'}</span>
                 </div>
                 <div className="flex items-center space-x-1">
                   <Phone size={14} />
-                  <span>+91 98765 43210</span>
+                  <span>{ngoProfile?.phone || user?.phone || 'Phone not set'}</span>
                 </div>
                 <div className="flex items-center space-x-1">
                   <Mail size={14} />
-                  <span>contact@ngo.org</span>
+                  <span>{ngoProfile?.email || user?.email || 'Email not set'}</span>
                 </div>
               </div>
             </div>
@@ -470,15 +485,15 @@ export default function NGODashboard() {
             <div className="space-y-2 text-sm">
               <div className="flex items-center space-x-2">
                 <MapPin size={14} className="text-gray-500" />
-                <span className="text-gray-600 dark:text-gray-400">Delhi, India</span>
+                <span className="text-gray-600 dark:text-gray-400">{ngoProfile?.address || user?.address || 'Location not set'}</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Phone size={14} className="text-gray-500" />
-                <span className="text-gray-600 dark:text-gray-400">+91 98765 43210</span>
+                <span className="text-gray-600 dark:text-gray-400">{ngoProfile?.phone || user?.phone || 'Phone not set'}</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Mail size={14} className="text-gray-500" />
-                <span className="text-gray-600 dark:text-gray-400">contact@ngo.org</span>
+                <span className="text-gray-600 dark:text-gray-400">{ngoProfile?.email || user?.email || 'Email not set'}</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Calendar size={14} className="text-gray-500" />

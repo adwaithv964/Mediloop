@@ -15,7 +15,7 @@ export default function DonationCenter() {
   const [selectedMedicines, setSelectedMedicines] = useState<string[]>([]);
   const [selectedOrg, setSelectedOrg] = useState<string>('');
   const [orgType, setOrgType] = useState<'ngo' | 'hospital'>('ngo');
-  const [userLocation] = useState({ lat: 28.7041, lng: 77.1025 }); // Default Delhi
+  const [userLocation, setUserLocation] = useState({ lat: 28.7041, lng: 77.1025 }); // Default Delhi
   const [myDonations, setMyDonations] = useState<Donation[]>([]);
   const [activeTab, setActiveTab] = useState<'donate' | 'history'>('donate');
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -30,6 +30,8 @@ export default function DonationCenter() {
       loadData();
       if (user.phone) setContactPhone(user.phone);
     }
+    // Auto-fetch location for list sorting
+    getPreciseLocation(true);
   }, [user]);
 
   const loadData = async () => {
@@ -81,20 +83,24 @@ export default function DonationCenter() {
     }
   };
 
-  const getPreciseLocation = () => {
+  const getPreciseLocation = (isAuto: boolean = false) => {
     if (!navigator.geolocation) {
-      toast.error('Geolocation is not supported');
+      if (!isAuto) toast.error('Geolocation is not supported');
       return;
     }
-    setLocationStatus('loading');
+    if (!isAuto) setLocationStatus('loading');
 
     const successHandler = (position: GeolocationPosition) => {
-      setPreciseLocation({
+      const newLoc = {
         lat: position.coords.latitude,
         lng: position.coords.longitude
-      });
-      setLocationStatus('success');
-      toast.success('Location captured!');
+      };
+      setPreciseLocation(newLoc);
+      setUserLocation(newLoc); // Updating sorting location
+      if (!isAuto) {
+        setLocationStatus('success');
+        toast.success('Location captured!');
+      }
     };
 
     const errorHandler = (error: GeolocationPositionError) => {
@@ -104,8 +110,10 @@ export default function DonationCenter() {
         successHandler,
         (finalError) => {
           console.error(finalError);
-          setLocationStatus('error');
-          toast.error('Failed to get location. Please enable GPS.');
+          if (!isAuto) {
+            setLocationStatus('error');
+            toast.error('Failed to get location. Please enable GPS.');
+          }
         },
         { enableHighAccuracy: false, timeout: 20000, maximumAge: 0 }
       );
@@ -420,7 +428,7 @@ export default function DonationCenter() {
                   </label>
                   <div className="flex items-center space-x-2">
                     <button
-                      onClick={getPreciseLocation}
+                      onClick={() => getPreciseLocation(false)}
                       className={`flex-1 py-2 px-4 rounded-lg flex items-center justify-center space-x-2 transition-colors ${locationStatus === 'success'
                         ? 'bg-green-50 text-green-700 border border-green-200'
                         : 'bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100'
