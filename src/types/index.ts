@@ -70,8 +70,15 @@ export interface Donation {
   medicines: DonationMedicine[];
   ngoId?: string;
   hospitalId?: string;
+  donorName?: string;
+  donorPhone?: string;
+  donorEmail?: string;
   status: 'pending' | 'confirmed' | 'picked-up' | 'completed' | 'cancelled';
   pickupAddress: string;
+  location?: {
+    lat: number;
+    lng: number;
+  };
   pickupDate?: Date;
   notes?: string;
   createdAt: Date;

@@ -1,17 +1,16 @@
 import { useEffect, useState } from 'react';
-import { 
-  Heart, 
-  Package, 
-  Clock, 
-  CheckCircle, 
-  AlertCircle, 
+import {
+  Heart,
+  Package,
+  Clock,
+  CheckCircle,
+  AlertCircle,
   TrendingUp,
   Users,
   MapPin,
   Phone,
   Mail,
   Calendar,
-  Filter,
   RefreshCw,
   Eye,
   MessageCircle,
@@ -20,7 +19,7 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { db } from '../../db';
-import { Donation, User } from '../../types';
+import { Donation } from '../../types';
 import { formatDate } from '../../utils/helpers';
 import toast from 'react-hot-toast';
 
@@ -56,34 +55,68 @@ export default function NGODashboard() {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
-      
+
       // Load donations for this NGO
-      const donations = await db.donations.where('ngoId').equals(user?.id || '').toArray();
-      const allDonations = await db.donations.toArray();
-      const users = await db.users.toArray();
+      // Auto-register/Check NGO profile
+      try {
+        const ngoProfileRes = await fetch(`http://localhost:5000/api/ngos/${user?.id}`);
+        if (ngoProfileRes.status === 404 && user) {
+          // Create default profile for this user
+          await fetch('http://localhost:5000/api/ngos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id: user.id,
+              name: user.name,
+              email: user.email,
+              phone: user.phone || '+91-0000000000',
+              address: user.address || 'Delhi, India',
+              verified: true,
+              location: { lat: 28.7041, lng: 77.1025 },
+              createdAt: new Date()
+            })
+          });
+          toast.success("NGO Profile Created Successfully");
+        }
+      } catch (e) {
+        console.error("Error checking NGO profile", e);
+      }
+
+      // const donations = await db.donations.where('ngoId').equals(user?.id || '').toArray();
+      const donationsRes = await fetch(`http://localhost:5000/api/donations/ngo/${user?.id}`);
+      let donations: Donation[] = [];
+      if (donationsRes.ok) {
+        const data = await donationsRes.json();
+        donations = data.map((d: any) => ({
+          ...d,
+          createdAt: new Date(d.createdAt),
+          updatedAt: new Date(d.updatedAt),
+          medicines: d.medicines.map((m: any) => ({ ...m, expiryDate: new Date(m.expiryDate) }))
+        }));
+      }
 
       // Calculate stats
       const totalDonations = donations.length;
-      const pendingDonations = donations.filter(d => d.status === 'pending').length;
-      const completedDonations = donations.filter(d => d.status === 'completed').length;
-      
+      const pendingDonations = donations.filter((d: Donation) => d.status === 'pending').length;
+      const completedDonations = donations.filter((d: Donation) => d.status === 'completed').length;
+
       // Calculate total medicines across all donations
-      const totalMedicines = donations.reduce((sum, d) => sum + d.medicines.length, 0);
-      
+      const totalMedicines = donations.reduce((sum: number, d: Donation) => sum + d.medicines.length, 0);
+
       // Active donors (users who donated in last 30 days)
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       const activeDonors = new Set(
         donations
-          .filter(d => d.createdAt > thirtyDaysAgo)
-          .map(d => d.userId)
+          .filter((d: Donation) => d.createdAt > thirtyDaysAgo)
+          .map((d: Donation) => d.userId)
       ).size;
 
       // This month's donations
       const thisMonth = new Date();
       thisMonth.setDate(1);
       thisMonth.setHours(0, 0, 0, 0);
-      const thisMonthDonations = donations.filter(d => d.createdAt >= thisMonth).length;
+      const thisMonthDonations = donations.filter((d: Donation) => d.createdAt >= thisMonth).length;
 
       setStats({
         totalDonations,
@@ -95,12 +128,12 @@ export default function NGODashboard() {
       });
 
       // Get recent donations (last 5)
-      setRecentDonations(donations.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()).slice(0, 5));
-      
+      setRecentDonations(donations.sort((a: Donation, b: Donation) => b.createdAt.getTime() - a.createdAt.getTime()).slice(0, 5));
+
       // Get urgent donations (pending for more than 3 days)
       const threeDaysAgo = new Date();
       threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
-      const urgent = donations.filter(d => 
+      const urgent = donations.filter((d: Donation) =>
         d.status === 'pending' && d.createdAt < threeDaysAgo
       ).slice(0, 5);
       setUrgentDonations(urgent);
@@ -115,7 +148,7 @@ export default function NGODashboard() {
 
   const handleDonationStatusUpdate = async (donationId: string, newStatus: string) => {
     try {
-      await db.donations.update(donationId, { 
+      await db.donations.update(donationId, {
         status: newStatus as any,
         updatedAt: new Date()
       });

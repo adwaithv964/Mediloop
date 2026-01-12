@@ -1,27 +1,24 @@
 import { useEffect, useState } from 'react';
-import { 
-  Heart, 
-  Search, 
-  Filter, 
-  Clock, 
-  CheckCircle, 
-  AlertCircle, 
+import {
+  Heart,
+  Search,
+  Filter,
+  Clock,
+  CheckCircle,
+  AlertCircle,
   Package,
   MapPin,
-  Phone,
-  Mail,
   Calendar,
   Eye,
-  MessageCircle,
   Download,
   RefreshCw,
-  Users,
   Pill,
-  XCircle
+  XCircle,
+  Phone,
+  Mail
 } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
-import { db } from '../../db';
-import { Donation, User } from '../../types';
+import { Donation } from '../../types';
 import { formatDate } from '../../utils/helpers';
 import toast from 'react-hot-toast';
 
@@ -48,8 +45,27 @@ export default function DonationRequests() {
   const loadDonations = async () => {
     try {
       setLoading(true);
-      const donationRequests = await db.donations.where('ngoId').equals(user?.id || '').toArray();
-      setDonations(donationRequests);
+      // const donationRequests = await db.donations.where('ngoId').equals(user?.id || '').toArray();
+      const response = await fetch(`http://localhost:5000/api/donations/ngo/${user?.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        // Ensure dates are Date objects
+        const parsedDonations = data.map((d: any) => ({
+          ...d,
+          createdAt: new Date(d.createdAt),
+          updatedAt: new Date(d.updatedAt),
+          expiryDate: d.expiryDate ? new Date(d.expiryDate) : undefined,
+          pickupDate: d.pickupDate ? new Date(d.pickupDate) : undefined,
+          medicines: d.medicines.map((m: any) => ({
+            ...m,
+            expiryDate: new Date(m.expiryDate)
+          }))
+        }));
+        setDonations(parsedDonations);
+      } else {
+        // Fallback or error handling
+        toast.error('Failed to load donation requests from server');
+      }
     } catch (error) {
       console.error('Error loading donations:', error);
       toast.error('Failed to load donation requests');
@@ -63,7 +79,7 @@ export default function DonationRequests() {
 
     if (searchTerm) {
       filtered = filtered.filter(donation =>
-        donation.medicines.some(med => 
+        donation.medicines.some(med =>
           med.name.toLowerCase().includes(searchTerm.toLowerCase())
         )
       );
@@ -78,10 +94,18 @@ export default function DonationRequests() {
 
   const handleStatusUpdate = async (donationId: string, newStatus: string) => {
     try {
-      await db.donations.update(donationId, { 
-        status: newStatus as any,
-        updatedAt: new Date()
+      //   await db.donations.update(donationId, { 
+      //     status: newStatus as any,
+      //     updatedAt: new Date()
+      //   });
+      const response = await fetch(`http://localhost:5000/api/donations/${donationId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
       });
+
+      if (!response.ok) throw new Error('Failed to update');
+
       toast.success('Donation status updated');
       loadDonations();
     } catch (error) {
@@ -307,12 +331,16 @@ export default function DonationRequests() {
                           <CheckCircle size={16} className="text-green-600" />
                         </button>
                       )}
-                      <button
-                        className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
-                        title="Contact Donor"
-                      >
-                        <MessageCircle size={16} className="text-blue-600" />
-                      </button>
+
+                      {donation.donorPhone && (
+                        <a
+                          href={`tel:${donation.donorPhone}`}
+                          className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
+                          title="Call Donor"
+                        >
+                          <Phone size={16} className="text-blue-600" />
+                        </a>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -376,10 +404,18 @@ export default function DonationRequests() {
                       <span>Confirm</span>
                     </button>
                   )}
-                  <button className="btn btn-secondary">
-                    <MessageCircle size={18} />
-                    <span>Contact</span>
-                  </button>
+                  {selectedDonation.donorPhone && (
+                    <a href={`tel:${selectedDonation.donorPhone}`} className="btn btn-secondary">
+                      <Phone size={18} />
+                      <span>Call</span>
+                    </a>
+                  )}
+                  {selectedDonation.donorEmail && (
+                    <a href={`mailto:${selectedDonation.donorEmail}`} className="btn btn-secondary">
+                      <Mail size={18} />
+                      <span>Email</span>
+                    </a>
+                  )}
                 </div>
               </div>
 
@@ -430,6 +466,19 @@ export default function DonationRequests() {
                         <span className="text-gray-600 dark:text-gray-400">
                           {formatDate(selectedDonation.pickupDate)}
                         </span>
+                      </div>
+                    )}
+                    {selectedDonation.location && (
+                      <div className="mt-2">
+                        <a
+                          href={`https://www.google.com/maps/search/?api=1&query=${selectedDonation.location.lat},${selectedDonation.location.lng}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary-600 hover:text-primary-700 underline text-sm flex items-center"
+                        >
+                          <MapPin size={16} className="mr-1" />
+                          View on Google Maps
+                        </a>
                       </div>
                     )}
                   </div>

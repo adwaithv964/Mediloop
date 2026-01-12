@@ -60,6 +60,7 @@ export default function Sidebar() {
           { icon: Home, label: 'Dashboard', path: '/dashboard' },
           { icon: Inbox, label: 'Donation Requests', path: '/donation-requests' },
           { icon: History, label: 'History', path: '/donation-history' },
+          { icon: Settings, label: 'Profile', path: '/profile' },
         ];
       default:
         return [];
@@ -123,10 +124,10 @@ export default function Sidebar() {
                 </div>
                 {item.badge && (
                   <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${item.badgeColor === 'purple'
-                      ? 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300'
-                      : item.badgeColor === 'green'
-                        ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
-                        : 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
+                    ? 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300'
+                    : item.badgeColor === 'green'
+                      ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
+                      : 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
                     }`}>
                     {item.badge}
                   </span>

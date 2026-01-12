@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Heart, MapPin, Phone, Mail, Clock, CheckCircle, Package } from 'lucide-react';
+import { Heart, MapPin, Phone, Mail, Clock, CheckCircle, Package, Trash2, Edit2, X } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { db } from '../../db';
 import { Medicine, NGO, Hospital, Donation } from '../../types';
@@ -17,17 +17,24 @@ export default function DonationCenter() {
   const [userLocation] = useState({ lat: 28.7041, lng: 77.1025 }); // Default Delhi
   const [myDonations, setMyDonations] = useState<Donation[]>([]);
   const [activeTab, setActiveTab] = useState<'donate' | 'history'>('donate');
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  // Contact & Location State
+  const [contactPhone, setContactPhone] = useState('');
+  const [locationStatus, setLocationStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [preciseLocation, setPreciseLocation] = useState<{ lat: number, lng: number } | null>(null);
 
   useEffect(() => {
     if (user) {
       loadData();
+      if (user.phone) setContactPhone(user.phone);
     }
   }, [user]);
 
   const loadData = async () => {
     if (!user) return;
 
-    // Load non-expired medicines
+    // Load non-expired medicines from local DB
     const meds = await db.medicines
       .where('userId')
       .equals(user.id)
@@ -36,14 +43,65 @@ export default function DonationCenter() {
     setMedicines(meds);
 
     // Load NGOs and Hospitals
-    const ngoList = await db.ngos.toArray();
+    try {
+      const ngosResponse = await fetch('http://localhost:5000/api/ngos');
+      if (ngosResponse.ok) {
+        const ngoList = await ngosResponse.json();
+        setNgos(ngoList);
+      }
+    } catch (e) {
+      console.error("Failed to load NGOs from API", e);
+      // Fallback or leave empty
+      const ngoList = await db.ngos.toArray();
+      setNgos(ngoList);
+    }
     const hospitalList = await db.hospitals.toArray();
-    setNgos(ngoList);
     setHospitals(hospitalList);
 
-    // Load user's donations
-    const donations = await db.donations.where('userId').equals(user.id).toArray();
-    setMyDonations(donations);
+    // Load user's donations from Backend API
+    try {
+      const response = await fetch(`http://localhost:5000/api/donations/user/${user.id}`);
+      if (response.ok) {
+        const donations = await response.json();
+        // Ensure dates are Date objects
+        const parsedDonations = donations.map((d: any) => ({
+          ...d,
+          createdAt: new Date(d.createdAt),
+          updatedAt: new Date(d.updatedAt),
+          expiryDate: d.expiryDate ? new Date(d.expiryDate) : undefined,
+          pickupDate: d.pickupDate ? new Date(d.pickupDate) : undefined,
+          medicines: d.medicines || []
+        }));
+        setMyDonations(parsedDonations);
+      }
+    } catch (error) {
+      console.error("Failed to load donations", error);
+      toast.error("Failed to load donation history");
+    }
+  };
+
+  const getPreciseLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error('Geolocation is not supported');
+      return;
+    }
+    setLocationStatus('loading');
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setPreciseLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        });
+        setLocationStatus('success');
+        toast.success('Location captured accurately!');
+      },
+      (error) => {
+        console.error(error);
+        setLocationStatus('error');
+        toast.error('Failed to get location. Please enable GPS.');
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
   };
 
   const handleMedicineToggle = (medId: string) => {
@@ -52,9 +110,52 @@ export default function DonationCenter() {
     );
   };
 
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this specific donation request?')) return;
+
+    try {
+      const response = await fetch(`http://localhost:5000/api/donations/${id}`, {
+        method: 'DELETE'
+      });
+      if (response.ok) {
+        toast.success('Donation deleted successfully');
+        loadData();
+      } else {
+        toast.error('Failed to delete donation');
+      }
+    } catch (e) {
+      toast.error('Error deleting donation');
+    }
+  };
+
+  const handleEdit = (donation: Donation) => {
+    setEditingId(donation.id);
+    setSelectedMedicines(donation.medicines.map(m => m.medicineId));
+    if (donation.ngoId) {
+      setOrgType('ngo');
+      setSelectedOrg(donation.ngoId);
+    } else if (donation.hospitalId) {
+      setOrgType('hospital');
+      setSelectedOrg(donation.hospitalId);
+    }
+    setActiveTab('donate');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setSelectedMedicines([]);
+    setSelectedOrg('');
+  };
+
   const handleSubmitDonation = async () => {
     if (!user || selectedMedicines.length === 0 || !selectedOrg) {
       toast.error('Please select medicines and an organization');
+      return;
+    }
+
+    if (!preciseLocation && !editingId) {
+      toast.error('Please capture your location first');
       return;
     }
 
@@ -69,27 +170,45 @@ export default function DonationCenter() {
           batchNumber: m.batchNumber,
         }));
 
-      const donation: Donation = {
-        id: generateId('donation-'),
+      const donationData = {
+        id: editingId || generateId('donation-'), // Use existing ID if editing
         userId: user.id,
         medicines: donationMedicines,
         ngoId: orgType === 'ngo' ? selectedOrg : undefined,
         hospitalId: orgType === 'hospital' ? selectedOrg : undefined,
         status: 'pending',
-        pickupAddress: 'User Address', // In real app, get from user profile
+        pickupAddress: 'User Current Location', // In a real app, reverse geocode this
+        location: preciseLocation || { lat: 0, lng: 0 },
+        donorName: user.name,
+        donorPhone: contactPhone,
+        donorEmail: user.email,
         pickupDate: undefined,
         notes: '',
-        createdAt: new Date(),
-        updatedAt: new Date(),
       };
 
-      await db.donations.add(donation);
-      toast.success('Donation request submitted successfully!');
-      setSelectedMedicines([]);
-      setSelectedOrg('');
+      const url = editingId
+        ? `http://localhost:5000/api/donations/${editingId}`
+        : 'http://localhost:5000/api/donations';
+
+      const method = editingId ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(donationData)
+      });
+
+      if (!response.ok) throw new Error('Failed to submit');
+
+      toast.success(editingId ? 'Donation updated successfully!' : 'Donation request submitted successfully!');
+      cancelEdit();
+      // Reset form
+      setPreciseLocation(null);
+      setLocationStatus('idle');
       loadData();
       setActiveTab('history');
     } catch (error) {
+      console.error(error);
       toast.error('Failed to submit donation');
     }
   };
@@ -126,21 +245,19 @@ export default function DonationCenter() {
       <div className="flex space-x-4 border-b border-gray-200 dark:border-gray-700">
         <button
           onClick={() => setActiveTab('donate')}
-          className={`pb-3 px-4 font-medium transition-colors ${
-            activeTab === 'donate'
-              ? 'border-b-2 border-primary-600 text-primary-600'
-              : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'
-          }`}
+          className={`pb-3 px-4 font-medium transition-colors ${activeTab === 'donate'
+            ? 'border-b-2 border-primary-600 text-primary-600'
+            : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'
+            }`}
         >
-          Make Donation
+          {editingId ? 'Edit Donation' : 'Make Donation'}
         </button>
         <button
-          onClick={() => setActiveTab('history')}
-          className={`pb-3 px-4 font-medium transition-colors ${
-            activeTab === 'history'
-              ? 'border-b-2 border-primary-600 text-primary-600'
-              : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'
-          }`}
+          onClick={() => { setActiveTab('history'); cancelEdit(); }}
+          className={`pb-3 px-4 font-medium transition-colors ${activeTab === 'history'
+            ? 'border-b-2 border-primary-600 text-primary-600'
+            : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'
+            }`}
         >
           My Donations ({myDonations.length})
         </button>
@@ -190,11 +307,10 @@ export default function DonationCenter() {
                     setOrgType('ngo');
                     setSelectedOrg('');
                   }}
-                  className={`flex-1 py-3 rounded-lg font-medium transition-colors ${
-                    orgType === 'ngo'
-                      ? 'bg-primary-600 text-white'
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-                  }`}
+                  className={`flex-1 py-3 rounded-lg font-medium transition-colors ${orgType === 'ngo'
+                    ? 'bg-primary-600 text-white'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                    }`}
                 >
                   NGOs ({ngos.length})
                 </button>
@@ -203,11 +319,10 @@ export default function DonationCenter() {
                     setOrgType('hospital');
                     setSelectedOrg('');
                   }}
-                  className={`flex-1 py-3 rounded-lg font-medium transition-colors ${
-                    orgType === 'hospital'
-                      ? 'bg-primary-600 text-white'
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-                  }`}
+                  className={`flex-1 py-3 rounded-lg font-medium transition-colors ${orgType === 'hospital'
+                    ? 'bg-primary-600 text-white'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                    }`}
                 >
                   Hospitals ({hospitals.length})
                 </button>
@@ -222,11 +337,10 @@ export default function DonationCenter() {
                 {sortedOrgs.map((org) => (
                   <label
                     key={org.id}
-                    className={`block p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                      selectedOrg === org.id
-                        ? 'border-primary-600 bg-primary-50 dark:bg-primary-900/20'
-                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
-                    }`}
+                    className={`block p-4 rounded-lg border-2 cursor-pointer transition-all ${selectedOrg === org.id
+                      ? 'border-primary-600 bg-primary-50 dark:bg-primary-900/20'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                      }`}
                   >
                     <input
                       type="radio"
@@ -267,14 +381,72 @@ export default function DonationCenter() {
               </div>
             </div>
 
-            <button
-              onClick={handleSubmitDonation}
-              disabled={selectedMedicines.length === 0 || !selectedOrg}
-              className="btn btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Heart size={18} />
-              <span>Submit Donation Request</span>
-            </button>
+            <div className="card">
+              <h2 className="text-xl font-semibold mb-4">Contact & Location</h2>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Contact Number
+                  </label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                    <input
+                      type="text"
+                      value={contactPhone}
+                      onChange={(e) => setContactPhone(e.target.value)}
+                      placeholder="+91 99999 99999"
+                      className="input pl-10 w-full"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Pickup Location
+                  </label>
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={getPreciseLocation}
+                      className={`flex-1 py-2 px-4 rounded-lg flex items-center justify-center space-x-2 transition-colors ${locationStatus === 'success'
+                        ? 'bg-green-50 text-green-700 border border-green-200'
+                        : 'bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100'
+                        }`}
+                    >
+                      <MapPin size={18} />
+                      <span>
+                        {locationStatus === 'loading' ? 'Getting Location...' :
+                          locationStatus === 'success' ? 'Location Captured' : 'Get Current Location'}
+                      </span>
+                    </button>
+                  </div>
+                  {preciseLocation && (
+                    <p className="text-xs text-green-600 mt-1 ml-1">
+                      Coordinates: {preciseLocation.lat.toFixed(6)}, {preciseLocation.lng.toFixed(6)}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex space-x-3">
+              {editingId && (
+                <button
+                  onClick={cancelEdit}
+                  className="btn btn-secondary flex-1"
+                >
+                  <X size={18} />
+                  <span>Cancel</span>
+                </button>
+              )}
+              <button
+                onClick={handleSubmitDonation}
+                disabled={selectedMedicines.length === 0 || !selectedOrg || !contactPhone || !preciseLocation}
+                className="btn btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Heart size={18} />
+                <span>{editingId ? 'Update Donation' : 'Submit Donation Request'}</span>
+              </button>
+            </div>
           </div>
         </div>
       ) : (
@@ -297,19 +469,39 @@ export default function DonationCenter() {
                         {formatDate(donation.createdAt)}
                       </p>
                     </div>
-                    <span
-                      className={`badge ${
-                        donation.status === 'completed'
+                    <div className="flex items-center space-x-2">
+                      <span
+                        className={`badge ${donation.status === 'completed'
                           ? 'badge-green'
                           : donation.status === 'confirmed'
-                          ? 'badge-blue'
-                          : donation.status === 'cancelled'
-                          ? 'badge-red'
-                          : 'badge-yellow'
-                      }`}
-                    >
-                      {donation.status.toUpperCase()}
-                    </span>
+                            ? 'badge-blue'
+                            : donation.status === 'cancelled'
+                              ? 'badge-red'
+                              : 'badge-yellow'
+                          }`}
+                      >
+                        {donation.status.toUpperCase()}
+                      </span>
+
+                      {donation.status === 'pending' && (
+                        <>
+                          <button
+                            onClick={() => handleEdit(donation)}
+                            className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900 rounded-full transition-colors"
+                            title="Edit Request"
+                          >
+                            <Edit2 size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(donation.id)}
+                            className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900 rounded-full transition-colors"
+                            title="Delete Request"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">

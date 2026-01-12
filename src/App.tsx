@@ -39,6 +39,7 @@ import Analytics from './pages/admin/Analytics';
 import NGODashboard from './pages/ngo/Dashboard';
 import DonationRequests from './pages/ngo/DonationRequests';
 import DonationHistory from './pages/ngo/DonationHistory';
+import NGOProfile from './pages/ngo/Profile';
 
 function App() {
   const { isAuthenticated, user } = useAuthStore();
@@ -130,6 +131,7 @@ function App() {
                 <Route path="/dashboard" element={<NGODashboard />} />
                 <Route path="/donation-requests" element={<DonationRequests />} />
                 <Route path="/donation-history" element={<DonationHistory />} />
+                <Route path="/profile" element={<NGOProfile />} />
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
               </>
             )}

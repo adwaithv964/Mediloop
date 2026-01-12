@@ -8,6 +8,8 @@ import mongoose from 'mongoose';
 
 import connectDB from './db.js';
 import { syncRouter } from './routes/sync.js';
+import donationsRouter from './routes/donations.js';
+import ngosRouter from './routes/ngos.js';
 
 // Load environment variables
 dotenv.config();
@@ -44,6 +46,8 @@ app.get('/health', (req, res) => {
 // API Routes
 app.use('/api/gemini', geminiRouter);
 app.use('/api/sync', syncRouter);
+app.use('/api/donations', donationsRouter);
+app.use('/api/ngos', ngosRouter);
 
 // 404 handler
 app.use('*', (req, res) => {
