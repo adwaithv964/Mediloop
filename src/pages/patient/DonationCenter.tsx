@@ -87,20 +87,33 @@ export default function DonationCenter() {
       return;
     }
     setLocationStatus('loading');
+
+    const successHandler = (position: GeolocationPosition) => {
+      setPreciseLocation({
+        lat: position.coords.latitude,
+        lng: position.coords.longitude
+      });
+      setLocationStatus('success');
+      toast.success('Location captured!');
+    };
+
+    const errorHandler = (error: GeolocationPositionError) => {
+      console.warn("High accuracy location failed, trying low accuracy...", error);
+      // Fallback to low accuracy
+      navigator.geolocation.getCurrentPosition(
+        successHandler,
+        (finalError) => {
+          console.error(finalError);
+          setLocationStatus('error');
+          toast.error('Failed to get location. Please enable GPS.');
+        },
+        { enableHighAccuracy: false, timeout: 20000, maximumAge: 0 }
+      );
+    };
+
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setPreciseLocation({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude
-        });
-        setLocationStatus('success');
-        toast.success('Location captured accurately!');
-      },
-      (error) => {
-        console.error(error);
-        setLocationStatus('error');
-        toast.error('Failed to get location. Please enable GPS.');
-      },
+      successHandler,
+      errorHandler,
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
   };

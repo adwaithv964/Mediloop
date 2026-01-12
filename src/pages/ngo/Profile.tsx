@@ -75,23 +75,37 @@ export default function NGOProfile() {
         }
 
         toast.loading('Getting your location...');
+
+        const successHandler = (position: GeolocationPosition) => {
+            toast.dismiss();
+            setFormData({
+                ...formData,
+                location: {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                }
+            });
+            toast.success('Location updated! Click Saved to persist.');
+        };
+
+        const errorHandler = (error: GeolocationPositionError) => {
+            console.warn("High accuracy location failed, trying low accuracy...", error);
+            toast.dismiss();
+            // Fallback to low accuracy
+            navigator.geolocation.getCurrentPosition(
+                successHandler,
+                (finalError) => {
+                    toast.error('Unable to retrieve your location. Please check GPS settings.');
+                    console.error(finalError);
+                },
+                { enableHighAccuracy: false, timeout: 20000, maximumAge: 0 }
+            );
+        };
+
         navigator.geolocation.getCurrentPosition(
-            (position) => {
-                toast.dismiss();
-                setFormData({
-                    ...formData,
-                    location: {
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude
-                    }
-                });
-                toast.success('Location updated! Click Saved to persist.');
-            },
-            (error) => {
-                toast.dismiss();
-                toast.error('Unable to retrieve your location');
-                console.error(error);
-            }
+            successHandler,
+            errorHandler,
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
     };
 
