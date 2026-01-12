@@ -42,7 +42,7 @@ export default function Dashboard() {
       // Calculate expected doses in last 7 days
       const startDate = new Date(schedule.startDate);
       const endDate = schedule.endDate ? new Date(schedule.endDate) : now;
-      
+
       // Only count days within the last 7 days when schedule was active
       for (let d = new Date(sevenDaysAgo); d <= now; d.setDate(d.getDate() + 1)) {
         if (d >= startDate && d <= endDate) {
@@ -110,20 +110,20 @@ export default function Dashboard() {
         // Only show active schedules
         const startDate = new Date(schedule.startDate);
         startDate.setHours(0, 0, 0, 0);
-        
+
         const isStarted = startDate <= today;
         const notEnded = !schedule.endDate || new Date(schedule.endDate) >= today;
-        
+
         return isStarted && notEnded;
       })
       .flatMap((schedule) => {
         const medicine = medicines.find((m) => m.id === schedule.medicineId);
         if (!medicine) return [];
-        
+
         return (schedule.times || []).map((time) => {
           const [hours, minutes] = time.split(':').map(Number);
           const timeInMinutes = hours * 60 + minutes;
-          
+
           // Check if already taken today
           const takenToday = schedule.taken?.some((t) => {
             const takenDate = new Date(t.date);
