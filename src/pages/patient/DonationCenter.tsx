@@ -5,6 +5,7 @@ import { db } from '../../db';
 import { Medicine, NGO, Hospital, Donation } from '../../types';
 import { generateId, calculateDistance, formatDate } from '../../utils/helpers';
 import toast from 'react-hot-toast';
+import { API_URL } from '../../config/api';
 
 export default function DonationCenter() {
   const { user } = useAuthStore();
@@ -44,7 +45,7 @@ export default function DonationCenter() {
 
     // Load NGOs and Hospitals
     try {
-      const ngosResponse = await fetch('http://localhost:5000/api/ngos');
+      const ngosResponse = await fetch(`${API_URL}/api/ngos`);
       if (ngosResponse.ok) {
         const ngoList = await ngosResponse.json();
         setNgos(ngoList);
@@ -60,7 +61,7 @@ export default function DonationCenter() {
 
     // Load user's donations from Backend API
     try {
-      const response = await fetch(`http://localhost:5000/api/donations/user/${user.id}`);
+      const response = await fetch(`${API_URL}/api/donations/user/${user.id}`);
       if (response.ok) {
         const donations = await response.json();
         // Ensure dates are Date objects
@@ -114,7 +115,7 @@ export default function DonationCenter() {
     if (!confirm('Are you sure you want to delete this specific donation request?')) return;
 
     try {
-      const response = await fetch(`http://localhost:5000/api/donations/${id}`, {
+      const response = await fetch(`${API_URL}/api/donations/${id}`, {
         method: 'DELETE'
       });
       if (response.ok) {
@@ -187,8 +188,8 @@ export default function DonationCenter() {
       };
 
       const url = editingId
-        ? `http://localhost:5000/api/donations/${editingId}`
-        : 'http://localhost:5000/api/donations';
+        ? `${API_URL}/api/donations/${editingId}`
+        : `${API_URL}/api/donations`;
 
       const method = editingId ? 'PUT' : 'POST';
 

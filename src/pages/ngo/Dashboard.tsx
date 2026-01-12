@@ -22,6 +22,7 @@ import { db } from '../../db';
 import { Donation } from '../../types';
 import { formatDate } from '../../utils/helpers';
 import toast from 'react-hot-toast';
+import { API_URL } from '../../config/api';
 
 interface NGODashboardStats {
   totalDonations: number;
@@ -59,10 +60,10 @@ export default function NGODashboard() {
       // Load donations for this NGO
       // Auto-register/Check NGO profile
       try {
-        const ngoProfileRes = await fetch(`http://localhost:5000/api/ngos/${user?.id}`);
+        const ngoProfileRes = await fetch(`${API_URL}/api/ngos/${user?.id}`);
         if (ngoProfileRes.status === 404 && user) {
           // Create default profile for this user
-          await fetch('http://localhost:5000/api/ngos', {
+          await fetch(`${API_URL}/api/ngos`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -83,7 +84,7 @@ export default function NGODashboard() {
       }
 
       // const donations = await db.donations.where('ngoId').equals(user?.id || '').toArray();
-      const donationsRes = await fetch(`http://localhost:5000/api/donations/ngo/${user?.id}`);
+      const donationsRes = await fetch(`${API_URL}/api/donations/ngo/${user?.id}`);
       let donations: Donation[] = [];
       if (donationsRes.ok) {
         const data = await donationsRes.json();

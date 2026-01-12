@@ -21,6 +21,7 @@ import { useAuthStore } from '../../store/useAuthStore';
 import { Donation } from '../../types';
 import { formatDate } from '../../utils/helpers';
 import toast from 'react-hot-toast';
+import { API_URL } from '../../config/api';
 
 export default function DonationRequests() {
   const { user } = useAuthStore();
@@ -46,7 +47,7 @@ export default function DonationRequests() {
     try {
       setLoading(true);
       // const donationRequests = await db.donations.where('ngoId').equals(user?.id || '').toArray();
-      const response = await fetch(`http://localhost:5000/api/donations/ngo/${user?.id}`);
+      const response = await fetch(`${API_URL}/api/donations/ngo/${user?.id}`);
       if (response.ok) {
         const data = await response.json();
         // Ensure dates are Date objects
@@ -98,7 +99,7 @@ export default function DonationRequests() {
       //     status: newStatus as any,
       //     updatedAt: new Date()
       //   });
-      const response = await fetch(`http://localhost:5000/api/donations/${donationId}/status`, {
+      const response = await fetch(`${API_URL}/api/donations/${donationId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus })

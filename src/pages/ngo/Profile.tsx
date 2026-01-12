@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { MapPin, Save, User, Phone, Navigation } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { API_URL } from '../../config/api';
 
 export default function NGOProfile() {
     const { user } = useAuthStore();
@@ -22,7 +23,7 @@ export default function NGOProfile() {
 
     const loadProfile = async () => {
         try {
-            const response = await fetch(`http://localhost:5000/api/ngos/${user?.id}`);
+            const response = await fetch(`${API_URL}/api/ngos/${user?.id}`);
             if (response.ok) {
                 const data = await response.json();
                 setFormData({
@@ -45,7 +46,7 @@ export default function NGOProfile() {
     const handleUpdate = async () => {
         try {
             setLoading(true);
-            const response = await fetch('http://localhost:5000/api/ngos', {
+            const response = await fetch(`${API_URL}/api/ngos`, {
                 method: 'POST', // Using POST as upsert
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
