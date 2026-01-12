@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { FamilyService } from '../../services/familyService';
+import { SyncService } from '../../services/syncService';
 import { User } from '../../types';
-import { Users, UserPlus, Shield, Copy, Check, AlertTriangle } from 'lucide-react';
+import { Users, UserPlus, Shield, Copy, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const FamilyManager = () => {
@@ -11,7 +12,6 @@ const FamilyManager = () => {
     const [activeTab, setActiveTab] = useState<'dependents' | 'caregivers'>('dependents');
     const [linkCode, setLinkCode] = useState('');
     const [loading, setLoading] = useState(false);
-    const [generatedCode, setGeneratedCode] = useState(user?.familyCode || 'Generating...');
 
     useEffect(() => {
         // If user doesn't have a family code yet, we might need to fetch/generate it 
@@ -29,10 +29,7 @@ const FamilyManager = () => {
             const updatedUser = await FamilyService.getProfile(user.id);
             if (updatedUser) {
                 updateUser(updatedUser);
-                if (updatedUser.familyCode) {
-                    setGeneratedCode(updatedUser.familyCode);
-                    // toast.success('Family Code generated');
-                }
+                updateUser(updatedUser);
             }
         } catch (error) {
             console.error('Failed to refresh profile', error);
@@ -92,6 +89,26 @@ const FamilyManager = () => {
                 </div>
             </div>
 
+            <button
+                onClick={async () => {
+                    const toastId = toast.loading('Syncing profile...');
+                    try {
+                        // Force sync user profile
+                        await SyncService.syncItem('users', user);
+                        // Wait a bit for backend to process
+                        setTimeout(async () => {
+                            await refreshProfile();
+                            toast.success('Profile synced to cloud!', { id: toastId });
+                        }, 2000);
+                    } catch (e) {
+                        toast.error('Sync failed. Check connection.', { id: toastId });
+                    }
+                }}
+                className="text-xs text-blue-600 hover:underline"
+            >
+                Trouble linking? Sync Profile to Cloud
+            </button>
+
             {/* Family Code Section */}
             <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl p-6 text-white shadow-lg">
                 <div className="flex justify-between items-center">
@@ -129,6 +146,7 @@ const FamilyManager = () => {
                         ? 'text-blue-600 dark:text-blue-400'
                         : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'
                         }`}
+
                 >
                     My Caregivers
                 </button>
@@ -207,7 +225,7 @@ const FamilyManager = () => {
                     )}
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 
