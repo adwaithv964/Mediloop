@@ -51,11 +51,14 @@ app.get('/health', (req, res) => {
   });
 });
 
+import { familyRouter } from './routes/family.js';
+
 // API Routes
 app.use('/api/gemini', geminiRouter);
 app.use('/api/sync', syncRouter);
 app.use('/api/donations', donationsRouter);
 app.use('/api/ngos', ngosRouter);
+app.use('/api/family', familyRouter);
 
 // 404 handler
 app.use('*', (req, res) => {

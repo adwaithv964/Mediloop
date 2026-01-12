@@ -5,6 +5,7 @@ import { useAuthStore } from './store/useAuthStore';
 import { useThemeStore } from './store/useThemeStore';
 import { initializeSampleData } from './db';
 import MedicineAssistant from './components/MedicineAssistant';
+import { SyncService } from './services/syncService';
 
 // Layouts
 import MainLayout from './components/layout/MainLayout';
@@ -28,6 +29,7 @@ import DrugInteractions from './pages/patient/DrugInteractions';
 import PatientAnalytics from './pages/patient/Analytics';
 import SymptomChecker from './pages/patient/SymptomChecker';
 import HealthTips from './pages/patient/HealthTips';
+import FamilyManager from './pages/patient/FamilyManager';
 
 // Admin Pages
 import AdminDashboard from './pages/admin/Dashboard';
@@ -64,6 +66,9 @@ function App() {
   useEffect(() => {
     // Initialize database with sample data
     initializeSampleData();
+
+    // Initialize Sync Service
+    SyncService.init();
 
     // Request notification permission
     if ('Notification' in window && Notification.permission === 'default') {
@@ -110,6 +115,7 @@ function App() {
                 <Route path="/analytics" element={<PatientAnalytics />} />
                 <Route path="/symptom-checker" element={<SymptomChecker />} />
                 <Route path="/health-tips" element={<HealthTips />} />
+                <Route path="/family" element={<FamilyManager />} />
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
               </>
             )}

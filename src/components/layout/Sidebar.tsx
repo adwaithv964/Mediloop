@@ -43,6 +43,7 @@ export default function Sidebar() {
           { icon: FolderHeart, label: 'Health Records', path: '/health-records', badge: 'New', badgeColor: 'green' },
           { icon: TrendingUp, label: 'Analytics', path: '/analytics' },
           { icon: ShieldCheck, label: 'Drug Safety', path: '/drug-interactions' },
+          { icon: Users, label: 'Family', path: '/family', badge: 'New', badgeColor: 'blue' },
           { icon: Heart, label: 'Donations', path: '/donations' },
           { icon: FileText, label: 'Reports', path: '/reports' },
           { icon: Settings, label: 'Settings', path: '/settings' },

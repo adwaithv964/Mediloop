@@ -1,6 +1,7 @@
 import express from 'express';
 import { User } from '../models/User.js';
 import { Medicine } from '../models/Medicine.js';
+import { MedicineSchedule } from '../models/MedicineSchedule.js';
 import { Donation } from '../models/Donation.js';
 import { NGO } from '../models/NGO.js';
 import { Hospital } from '../models/Hospital.js';
@@ -11,6 +12,7 @@ export const syncRouter = express.Router();
 const models = {
     users: User,
     medicines: Medicine,
+    schedules: MedicineSchedule,
     donations: Donation,
     ngos: NGO,
     hospitals: Hospital,

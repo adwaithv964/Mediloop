@@ -10,6 +10,18 @@ export interface User {
   createdAt: Date;
   updatedAt: Date;
   preferences?: UserPreferences;
+  // Family Mode
+  familyCode?: string;
+  caregivers?: string[];
+  dependents?: string[];
+  emergencyContacts?: EmergencyContact[];
+}
+
+export interface EmergencyContact {
+  name: string;
+  phone: string;
+  email: string;
+  relation: string;
 }
 
 export interface UserPreferences {
