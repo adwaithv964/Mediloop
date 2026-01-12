@@ -1,11 +1,8 @@
 {
-  "routes": [
+  "rewrites": [
     {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/((?!assets/|sw.js|favicon.ico|logo.svg|manifest.json).*)",
+      "destination": "/index.html"
     }
   ]
 }
