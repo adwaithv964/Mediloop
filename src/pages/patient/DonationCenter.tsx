@@ -13,6 +13,7 @@ export default function DonationCenter() {
   const [ngos, setNgos] = useState<NGO[]>([]);
   const [hospitals, setHospitals] = useState<Hospital[]>([]);
   const [selectedMedicines, setSelectedMedicines] = useState<string[]>([]);
+  const [selectedQuantities, setSelectedQuantities] = useState<{ [key: string]: number }>({});
   const [selectedOrg, setSelectedOrg] = useState<string>('');
   const [orgType, setOrgType] = useState<'ngo' | 'hospital'>('ngo');
   const [userLocation, setUserLocation] = useState({ lat: 28.7041, lng: 77.1025 }); // Default Delhi
@@ -127,9 +128,23 @@ export default function DonationCenter() {
   };
 
   const handleMedicineToggle = (medId: string) => {
-    setSelectedMedicines((prev) =>
-      prev.includes(medId) ? prev.filter((id) => id !== medId) : [...prev, medId]
-    );
+    const med = medicines.find(m => m.id === medId);
+    if (!med) return;
+
+    if (selectedMedicines.includes(medId)) {
+      setSelectedMedicines(prev => prev.filter(id => id !== medId));
+      const newQuantities = { ...selectedQuantities };
+      delete newQuantities[medId];
+      setSelectedQuantities(newQuantities);
+    } else {
+      setSelectedMedicines(prev => [...prev, medId]);
+      setSelectedQuantities(prev => ({ ...prev, [medId]: med.quantity })); // Default to max
+    }
+  };
+
+  const handleQuantityChange = (medId: string, qty: number) => {
+    if (isNaN(qty) || qty < 0) qty = 0;
+    setSelectedQuantities(prev => ({ ...prev, [medId]: qty }));
   };
 
   const handleDelete = async (id: string) => {
@@ -153,6 +168,14 @@ export default function DonationCenter() {
   const handleEdit = (donation: Donation) => {
     setEditingId(donation.id);
     setSelectedMedicines(donation.medicines.map(m => m.medicineId));
+
+    // Populate quantities
+    const quantities: { [key: string]: number } = {};
+    donation.medicines.forEach(m => {
+      quantities[m.medicineId] = m.quantity;
+    });
+    setSelectedQuantities(quantities);
+
     if (donation.ngoId) {
       setOrgType('ngo');
       setSelectedOrg(donation.ngoId);
@@ -167,6 +190,7 @@ export default function DonationCenter() {
   const cancelEdit = () => {
     setEditingId(null);
     setSelectedMedicines([]);
+    setSelectedQuantities({});
     setSelectedOrg('');
   };
 
@@ -187,10 +211,16 @@ export default function DonationCenter() {
         .map((m) => ({
           medicineId: m.id,
           name: m.name,
-          quantity: m.quantity,
+          quantity: selectedQuantities[m.id] || m.quantity, // Use selected quantity
           expiryDate: m.expiryDate,
           batchNumber: m.batchNumber,
         }));
+
+      // Validate quantities
+      if (donationMedicines.some(m => m.quantity <= 0)) {
+        toast.error("Please enter valid quantities for all selected medicines");
+        return;
+      }
 
       const donationData = {
         id: editingId || generateId('donation-'), // Use existing ID if editing
@@ -293,23 +323,55 @@ export default function DonationCenter() {
             {medicines.length > 0 ? (
               <div className="space-y-2 max-h-96 overflow-y-auto">
                 {medicines.map((med) => (
-                  <label
+                  <div
                     key={med.id}
-                    className="flex items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                    className={`p-3 rounded-lg border transition-all ${selectedMedicines.includes(med.id)
+                      ? 'bg-primary-50 border-primary-200 dark:bg-primary-900/20 dark:border-primary-800'
+                      : 'bg-gray-50 border-transparent dark:bg-gray-700'
+                      }`}
                   >
-                    <input
-                      type="checkbox"
-                      checked={selectedMedicines.includes(med.id)}
-                      onChange={() => handleMedicineToggle(med.id)}
-                      className="w-5 h-5 text-primary-600 rounded"
-                    />
-                    <div className="ml-3 flex-1">
-                      <p className="font-medium text-gray-900 dark:text-white">{med.name}</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Qty: {med.quantity} • Expires: {formatDate(med.expiryDate)}
-                      </p>
+                    <div className="flex items-start">
+                      <div className="flex items-center h-5">
+                        <input
+                          type="checkbox"
+                          checked={selectedMedicines.includes(med.id)}
+                          onChange={() => handleMedicineToggle(med.id)}
+                          className="w-5 h-5 text-primary-600 rounded focus:ring-primary-500 border-gray-300"
+                        />
+                      </div>
+                      <div className="ml-3 flex-1">
+                        <div className="flex justify-between">
+                          <label className="font-medium text-gray-900 dark:text-white cursor-pointer" onClick={() => handleMedicineToggle(med.id)}>
+                            {med.name}
+                          </label>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                            Available: {med.quantity}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          Expires: {formatDate(med.expiryDate)}
+                        </p>
+
+                        {selectedMedicines.includes(med.id) && (
+                          <div className="mt-3 flex items-center space-x-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                              Quantity to donate:
+                            </label>
+                            <input
+                              type="number"
+                              min="1"
+                              value={selectedQuantities[med.id] !== undefined ? (selectedQuantities[med.id] === 0 ? '' : selectedQuantities[med.id]) : med.quantity}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                handleQuantityChange(med.id, val === '' ? 0 : parseInt(val));
+                              }}
+                              className="input w-24 py-1 px-2 text-sm"
+                            />
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </label>
+                  </div>
                 ))}
               </div>
             ) : (
@@ -356,50 +418,60 @@ export default function DonationCenter() {
                 Nearby {orgType === 'ngo' ? 'NGOs' : 'Hospitals'}
               </h2>
               <div className="space-y-3 max-h-96 overflow-y-auto">
-                {sortedOrgs.map((org) => (
-                  <label
-                    key={org.id}
-                    className={`block p-4 rounded-lg border-2 cursor-pointer transition-all ${selectedOrg === org.id
-                      ? 'border-primary-600 bg-primary-50 dark:bg-primary-900/20'
-                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
-                      }`}
-                  >
-                    <input
-                      type="radio"
-                      name="organization"
-                      value={org.id}
-                      checked={selectedOrg === org.id}
-                      onChange={() => setSelectedOrg(org.id)}
-                      className="sr-only"
-                    />
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900 dark:text-white flex items-center">
-                          {org.name}
-                          {org.verified && (
-                            <CheckCircle className="ml-2 text-green-500" size={16} />
-                          )}
-                        </h3>
-                        <div className="mt-2 space-y-1 text-sm text-gray-600 dark:text-gray-400">
-                          <div className="flex items-center">
-                            <MapPin size={14} className="mr-2" />
-                            {org.address} • {org.distance.toFixed(1)} km away
-                          </div>
-                          <div className="flex items-center">
-                            <Phone size={14} className="mr-2" />
-                            {org.phone}
-                          </div>
-                          {org.email && (
-                            <div className="flex items-center">
-                              <Mail size={14} className="mr-2" />
-                              {org.email}
+                {sortedOrgs.filter(org => org.distance <= 50).length > 0 ? (
+                  sortedOrgs
+                    .filter(org => org.distance <= 50)
+                    .map((org) => (
+                      <label
+                        key={org.id}
+                        className={`block p-4 rounded-lg border-2 cursor-pointer transition-all ${selectedOrg === org.id
+                          ? 'border-primary-600 bg-primary-50 dark:bg-primary-900/20'
+                          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                          }`}
+                      >
+                        <input
+                          type="radio"
+                          name="organization"
+                          value={org.id}
+                          checked={selectedOrg === org.id}
+                          onChange={() => setSelectedOrg(org.id)}
+                          className="sr-only"
+                        />
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-gray-900 dark:text-white flex items-center">
+                              {org.name}
+                              {org.verified && (
+                                <CheckCircle className="ml-2 text-green-500" size={16} />
+                              )}
+                            </h3>
+                            <div className="mt-2 space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                              <div className="flex items-center">
+                                <MapPin size={14} className="mr-2" />
+                                {org.address} • {org.distance.toFixed(1)} km away
+                              </div>
+                              <div className="flex items-center">
+                                <Phone size={14} className="mr-2" />
+                                {org.phone}
+                              </div>
+                              {org.email && (
+                                <div className="flex items-center">
+                                  <Mail size={14} className="mr-2" />
+                                  {org.email}
+                                </div>
+                              )}
                             </div>
-                          )}
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  </label>
-                ))}
+                      </label>
+                    ))
+                ) : (
+                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                    <MapPin className="mx-auto h-12 w-12 text-gray-400 mb-3" />
+                    <p className="font-medium">No nearby {orgType === 'ngo' ? 'NGOs' : 'hospitals'} found</p>
+                    <p className="text-sm mt-1">Try updating your location or check back later.</p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -525,10 +597,19 @@ export default function DonationCenter() {
                       )}
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                      <Package size={16} className="mr-2" />
-                      {donation.medicines.length} medicine(s) donated
+                  <div className="space-y-2 mt-3">
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                      <div className="flex items-center mb-1">
+                        <Package size={16} className="mr-2" />
+                        <span className="font-medium">Medicines:</span>
+                      </div>
+                      <ul className="list-disc list-inside ml-5 space-y-1">
+                        {donation.medicines.map((m, idx) => (
+                          <li key={idx}>
+                            {m.name} <span className="font-semibold text-primary-600 dark:text-primary-400">(Qty: {m.quantity})</span>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
                     {donation.pickupDate && (
                       <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">

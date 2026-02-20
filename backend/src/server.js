@@ -52,6 +52,8 @@ app.get('/health', (req, res) => {
 });
 
 import { familyRouter } from './routes/family.js';
+import { adminRouter } from './routes/admin.js';
+
 
 // API Routes
 app.use('/api/gemini', geminiRouter);
@@ -59,6 +61,8 @@ app.use('/api/sync', syncRouter);
 app.use('/api/donations', donationsRouter);
 app.use('/api/ngos', ngosRouter);
 app.use('/api/family', familyRouter);
+app.use('/api/admin', adminRouter);
+
 
 // 404 handler
 app.use('*', (req, res) => {

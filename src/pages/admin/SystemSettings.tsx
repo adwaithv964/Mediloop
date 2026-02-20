@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import { 
-  Settings, 
-  Bell, 
-  Database, 
-  Shield, 
-  Server, 
-  Save, 
-  RefreshCw, 
+import { useState, useEffect } from 'react';
+import {
+  Settings,
+  Bell,
+  Database,
+  Shield,
+  Server,
+  Save,
+  RefreshCw,
   AlertTriangle,
   CheckCircle,
   XCircle,
@@ -23,6 +23,7 @@ import {
   Pill
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import axios from 'axios';
 
 interface SystemConfig {
   notifications: {
@@ -86,6 +87,21 @@ export default function SystemSettings() {
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<'notifications' | 'platform' | 'security' | 'database'>('notifications');
 
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  const fetchSettings = async () => {
+    try {
+      // In a real app we'd use the configured base URL
+      const response = await axios.get('http://localhost:5000/api/admin/settings', { withCredentials: true });
+      setConfig(response.data);
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+      toast.error('Failed to load settings');
+    }
+  };
+
   const handleConfigChange = (section: keyof SystemConfig, field: string, value: any) => {
     setConfig(prev => ({
       ...prev,
@@ -99,10 +115,10 @@ export default function SystemSettings() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      // In real app, save to backend
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await axios.post('http://localhost:5000/api/admin/settings', config, { withCredentials: true });
       toast.success('Settings saved successfully');
     } catch (error) {
+      console.error('Error saving settings:', error);
       toast.error('Failed to save settings');
     } finally {
       setSaving(false);
@@ -236,11 +252,10 @@ export default function SystemSettings() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                  activeTab === tab.id
-                    ? 'border-primary-600 text-primary-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
+                className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === tab.id
+                  ? 'border-primary-600 text-primary-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
               >
                 <tab.icon size={18} />
                 <span>{tab.label}</span>
@@ -256,7 +271,7 @@ export default function SystemSettings() {
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
                 Notification Settings
               </h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
@@ -269,14 +284,12 @@ export default function SystemSettings() {
                     </div>
                     <button
                       onClick={() => handleConfigChange('notifications', 'emailEnabled', !config.notifications.emailEnabled)}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        config.notifications.emailEnabled ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'
-                      }`}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${config.notifications.emailEnabled ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'
+                        }`}
                     >
                       <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          config.notifications.emailEnabled ? 'translate-x-6' : 'translate-x-1'
-                        }`}
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${config.notifications.emailEnabled ? 'translate-x-6' : 'translate-x-1'
+                          }`}
                       />
                     </button>
                   </div>
@@ -291,14 +304,12 @@ export default function SystemSettings() {
                     </div>
                     <button
                       onClick={() => handleConfigChange('notifications', 'smsEnabled', !config.notifications.smsEnabled)}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        config.notifications.smsEnabled ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'
-                      }`}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${config.notifications.smsEnabled ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'
+                        }`}
                     >
                       <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          config.notifications.smsEnabled ? 'translate-x-6' : 'translate-x-1'
-                        }`}
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${config.notifications.smsEnabled ? 'translate-x-6' : 'translate-x-1'
+                          }`}
                       />
                     </button>
                   </div>
@@ -313,14 +324,12 @@ export default function SystemSettings() {
                     </div>
                     <button
                       onClick={() => handleConfigChange('notifications', 'pushEnabled', !config.notifications.pushEnabled)}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        config.notifications.pushEnabled ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'
-                      }`}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${config.notifications.pushEnabled ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'
+                        }`}
                     >
                       <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          config.notifications.pushEnabled ? 'translate-x-6' : 'translate-x-1'
-                        }`}
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${config.notifications.pushEnabled ? 'translate-x-6' : 'translate-x-1'
+                          }`}
                       />
                     </button>
                   </div>
@@ -361,7 +370,7 @@ export default function SystemSettings() {
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
                 Platform Settings
               </h3>
-              
+
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
@@ -373,14 +382,12 @@ export default function SystemSettings() {
                   </div>
                   <button
                     onClick={() => handleConfigChange('platform', 'maintenanceMode', !config.platform.maintenanceMode)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      config.platform.maintenanceMode ? 'bg-red-600' : 'bg-gray-200 dark:bg-gray-700'
-                    }`}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${config.platform.maintenanceMode ? 'bg-red-600' : 'bg-gray-200 dark:bg-gray-700'
+                      }`}
                   >
                     <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        config.platform.maintenanceMode ? 'translate-x-6' : 'translate-x-1'
-                      }`}
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${config.platform.maintenanceMode ? 'translate-x-6' : 'translate-x-1'
+                        }`}
                     />
                   </button>
                 </div>
@@ -395,14 +402,12 @@ export default function SystemSettings() {
                   </div>
                   <button
                     onClick={() => handleConfigChange('platform', 'registrationEnabled', !config.platform.registrationEnabled)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      config.platform.registrationEnabled ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'
-                    }`}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${config.platform.registrationEnabled ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'
+                      }`}
                   >
                     <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        config.platform.registrationEnabled ? 'translate-x-6' : 'translate-x-1'
-                      }`}
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${config.platform.registrationEnabled ? 'translate-x-6' : 'translate-x-1'
+                        }`}
                     />
                   </button>
                 </div>
@@ -417,14 +422,12 @@ export default function SystemSettings() {
                   </div>
                   <button
                     onClick={() => handleConfigChange('platform', 'donationEnabled', !config.platform.donationEnabled)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      config.platform.donationEnabled ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'
-                    }`}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${config.platform.donationEnabled ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'
+                      }`}
                   >
                     <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        config.platform.donationEnabled ? 'translate-x-6' : 'translate-x-1'
-                      }`}
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${config.platform.donationEnabled ? 'translate-x-6' : 'translate-x-1'
+                        }`}
                     />
                   </button>
                 </div>
@@ -463,7 +466,7 @@ export default function SystemSettings() {
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
                 Security Settings
               </h3>
-              
+
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
@@ -475,14 +478,12 @@ export default function SystemSettings() {
                   </div>
                   <button
                     onClick={() => handleConfigChange('security', 'requireEmailVerification', !config.security.requireEmailVerification)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      config.security.requireEmailVerification ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'
-                    }`}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${config.security.requireEmailVerification ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'
+                      }`}
                   >
                     <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        config.security.requireEmailVerification ? 'translate-x-6' : 'translate-x-1'
-                      }`}
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${config.security.requireEmailVerification ? 'translate-x-6' : 'translate-x-1'
+                        }`}
                     />
                   </button>
                 </div>
@@ -497,14 +498,12 @@ export default function SystemSettings() {
                   </div>
                   <button
                     onClick={() => handleConfigChange('security', 'enableTwoFactor', !config.security.enableTwoFactor)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      config.security.enableTwoFactor ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'
-                    }`}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${config.security.enableTwoFactor ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'
+                      }`}
                   >
                     <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        config.security.enableTwoFactor ? 'translate-x-6' : 'translate-x-1'
-                      }`}
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${config.security.enableTwoFactor ? 'translate-x-6' : 'translate-x-1'
+                        }`}
                     />
                   </button>
                 </div>
@@ -543,7 +542,7 @@ export default function SystemSettings() {
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
                 Database Settings
               </h3>
-              
+
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
@@ -555,14 +554,12 @@ export default function SystemSettings() {
                   </div>
                   <button
                     onClick={() => handleConfigChange('database', 'backupEnabled', !config.database.backupEnabled)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      config.database.backupEnabled ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'
-                    }`}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${config.database.backupEnabled ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'
+                      }`}
                   >
                     <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        config.database.backupEnabled ? 'translate-x-6' : 'translate-x-1'
-                      }`}
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${config.database.backupEnabled ? 'translate-x-6' : 'translate-x-1'
+                        }`}
                     />
                   </button>
                 </div>
@@ -577,14 +574,12 @@ export default function SystemSettings() {
                   </div>
                   <button
                     onClick={() => handleConfigChange('database', 'compressionEnabled', !config.database.compressionEnabled)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      config.database.compressionEnabled ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'
-                    }`}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${config.database.compressionEnabled ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'
+                      }`}
                   >
                     <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        config.database.compressionEnabled ? 'translate-x-6' : 'translate-x-1'
-                      }`}
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${config.database.compressionEnabled ? 'translate-x-6' : 'translate-x-1'
+                        }`}
                     />
                   </button>
                 </div>

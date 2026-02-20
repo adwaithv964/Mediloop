@@ -36,19 +36,31 @@ router.get('/ngo/:ngoId', async (req, res) => {
     }
 });
 
-// Update donation status
+// Update donation status (and potentially medicines)
 router.put('/:id/status', async (req, res) => {
     try {
-        const { status } = req.body;
+        const { status, medicines } = req.body;
+        const updateData = { status, updatedAt: new Date() };
+
+        // If medicines are provided (e.g., NGO adjusted quantities), update them
+        if (medicines) {
+            updateData.medicines = medicines;
+        }
+
         const donation = await Donation.findOneAndUpdate(
-            { id: req.params.id }, // Use custom id field
-            { status, updatedAt: new Date() },
+            { id: req.params.id },
+            updateData,
             { new: true }
         );
-        if (!donation) return res.status(404).json({ message: 'Donation not found' });
+
+        if (!donation) {
+            return res.status(404).json({ error: 'Donation not found' });
+        }
+
         res.json(donation);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error("Update error:", error);
+        res.status(500).json({ error: 'Failed to update donation status' });
     }
 });
 

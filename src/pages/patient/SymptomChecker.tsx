@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { Activity, AlertCircle, CheckCircle, Loader2, Plus, X } from 'lucide-react';
-import { geminiAPI } from '../../services/geminiAPI';
+import { Activity, AlertCircle, CheckCircle, Loader2, Plus, X, Pill } from 'lucide-react';
 import toast from 'react-hot-toast';
+import axios from 'axios';
+import { db } from '../../db';
+import { useAuthStore } from '../../store/useAuthStore';
 
 interface Symptom {
   id: string;
@@ -11,6 +13,7 @@ interface Symptom {
 }
 
 export default function SymptomChecker() {
+  const { user } = useAuthStore();
   const [symptoms, setSymptoms] = useState<Symptom[]>([]);
   const [newSymptom, setNewSymptom] = useState('');
   const [severity, setSeverity] = useState<'mild' | 'moderate' | 'severe'>('mild');
@@ -52,67 +55,40 @@ export default function SymptomChecker() {
     setResult(null);
 
     try {
-      // Try Gemini API first
-      const geminiKey = import.meta.env.VITE_GEMINI_API_KEY;
-      if (geminiKey && geminiKey !== 'your_gemini_api_key_here') {
-        const analysis = await geminiAPI.analyzeSymptoms(symptoms);
-
-        setResult({
-          analysis,
-          urgency: getUrgencyLevel(),
-          recommendations: extractRecommendations(analysis),
-        });
-        setAnalyzing(false);
-        return;
+      // Fetch user's medicines
+      let userMedicines: any[] = [];
+      try {
+        if (user?.id) {
+          userMedicines = await db.medicines.where('userId').equals(user.id).toArray();
+        }
+      } catch (err) {
+        console.error('Failed to fetch medicines:', err);
       }
 
-      // Fallback to OpenAI if Gemini is not configured
-      const openaiKey = import.meta.env.VITE_OPENAI_API_KEY;
-      if (!openaiKey || openaiKey === 'your_openai_key_here') {
-        setResult(getFallbackAnalysis());
-        setAnalyzing(false);
-        return;
-      }
-
-      const symptomDescription = symptoms.map(s =>
-        `${s.name} (${s.severity} severity, lasting ${s.duration})`
-      ).join(', ');
-
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${openaiKey}`,
-        },
-        body: JSON.stringify({
-          model: 'gpt-3.5-turbo',
-          messages: [
-            {
-              role: 'system',
-              content: 'You are a medical assistant. Provide general health information only. Always recommend consulting a healthcare professional for proper diagnosis.'
-            },
-            {
-              role: 'user',
-              content: `Analyze these symptoms: ${symptomDescription}. Provide: 1) Possible causes (3-4), 2) Self-care recommendations, 3) When to see a doctor. Keep it concise and clear.`
-            }
-          ],
-          temperature: 0.7,
-          max_tokens: 600,
-        }),
+      // Call Backend API
+      const response = await axios.post('http://localhost:5000/api/gemini/analyze-symptoms', {
+        symptoms,
+        userMedicines
       });
 
-      if (!response.ok) throw new Error('OpenAI API request failed');
+      const analysisText = response.data.analysis;
 
-      const data = await response.json();
-      const analysis = data.choices[0]?.message?.content || '';
+      // Parse suggestions from response
+      const suggestionsMatch = analysisText.match(/SECTION 2: SUGGESTED_MEDICINES([\s\S]*?)(?:Disclaimer|$)/i);
+      const suggestions = suggestionsMatch ? suggestionsMatch[1].trim() : '';
+
+      // Clean up analysis text to remove the suggestions section for display
+      const cleanAnalysis = analysisText.replace(/SECTION 2: SUGGESTED_MEDICINES[\s\S]*/i, '').trim();
 
       setResult({
-        analysis,
+        analysis: cleanAnalysis,
+        suggestions: suggestions !== "No matching medicines found in your cabinet." ? suggestions : null,
         urgency: getUrgencyLevel(),
-        recommendations: extractRecommendations(analysis),
+        recommendations: extractRecommendations(cleanAnalysis),
       });
     } catch (error) {
       console.error('Analysis error:', error);
+      toast.error('Failed to analyze symptoms');
       setResult(getFallbackAnalysis());
     } finally {
       setAnalyzing(false);
@@ -121,7 +97,7 @@ export default function SymptomChecker() {
 
   const getFallbackAnalysis = () => {
     const hasSevere = symptoms.some(s => s.severity === 'severe');
-    
+
     return {
       analysis: `Based on your symptoms (${symptoms.map(s => s.name).join(', ')}), here's general guidance:\n\n` +
         `These symptoms could be related to various conditions. ${hasSevere ? 'Given the severity, ' : ''}` +
@@ -132,6 +108,7 @@ export default function SymptomChecker() {
         `• Avoid self-medication\n` +
         `• Keep a symptom diary\n\n` +
         `Please consult a healthcare professional for proper diagnosis and treatment.`,
+      suggestions: null,
       urgency: hasSevere ? 'high' : symptoms.length > 3 ? 'moderate' : 'low',
       recommendations: [
         'Consult a healthcare professional',
@@ -162,7 +139,7 @@ export default function SymptomChecker() {
 
   const getUrgencyDisplay = () => {
     if (!result) return null;
-    
+
     if (result.urgency === 'high') {
       return (
         <div className="card bg-red-50 dark:bg-red-900/20 border-2 border-red-300 dark:border-red-700">
@@ -178,7 +155,7 @@ export default function SymptomChecker() {
         </div>
       );
     }
-    
+
     if (result.urgency === 'moderate') {
       return (
         <div className="card bg-orange-50 dark:bg-orange-900/20 border-2 border-orange-300 dark:border-orange-700">
@@ -194,7 +171,7 @@ export default function SymptomChecker() {
         </div>
       );
     }
-    
+
     return (
       <div className="card bg-green-50 dark:bg-green-900/20 border-2 border-green-300 dark:border-green-700">
         <div className="flex items-start space-x-3">
@@ -234,7 +211,7 @@ export default function SymptomChecker() {
               onKeyPress={(e) => e.key === 'Enter' && addSymptom()}
             />
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">Severity</label>
@@ -248,7 +225,7 @@ export default function SymptomChecker() {
                 <option value="severe">Severe</option>
               </select>
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium mb-1">Duration</label>
               <select
@@ -264,7 +241,7 @@ export default function SymptomChecker() {
               </select>
             </div>
           </div>
-          
+
           <button onClick={addSymptom} className="btn btn-primary w-full">
             <Plus className="w-5 h-5 mr-2" />
             Add Symptom
@@ -301,7 +278,7 @@ export default function SymptomChecker() {
               </div>
             ))}
           </div>
-          
+
           <button
             onClick={analyzeSymptoms}
             disabled={analyzing}
@@ -322,7 +299,21 @@ export default function SymptomChecker() {
       {result && (
         <>
           {getUrgencyDisplay()}
-          
+
+          {result.suggestions && (
+            <div className="card bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800">
+              <div className="flex items-start space-x-3">
+                <Pill className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" />
+                <div>
+                  <h3 className="font-semibold text-blue-800 dark:text-blue-200">Suggested Medicines from Your Cabinet</h3>
+                  <div className="prose dark:prose-invert text-blue-900 dark:text-blue-100 mt-2">
+                    <p className="whitespace-pre-wrap text-sm">{result.suggestions}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="card">
             <h2 className="text-lg font-semibold mb-3">Analysis</h2>
             <div className="prose dark:prose-invert max-w-none">
@@ -340,7 +331,7 @@ export default function SymptomChecker() {
           <div className="text-sm text-blue-800 dark:text-blue-200">
             <p className="font-semibold mb-1">Disclaimer</p>
             <p>
-              This tool provides general health information only and is not a substitute for professional 
+              This tool provides general health information only and is not a substitute for professional
               medical advice, diagnosis, or treatment. Always consult your healthcare provider for medical concerns.
             </p>
           </div>

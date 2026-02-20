@@ -14,6 +14,8 @@ import AuthLayout from './components/layout/AuthLayout';
 // Auth Pages
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
+import AdminLogin from './pages/auth/AdminLogin';
+import AdminRegister from './pages/auth/AdminRegister';
 
 // Patient Pages
 import PatientDashboard from './pages/patient/Dashboard';
@@ -36,16 +38,20 @@ import AdminDashboard from './pages/admin/Dashboard';
 import UserManagement from './pages/admin/UserManagement';
 import SystemSettings from './pages/admin/SystemSettings';
 import Analytics from './pages/admin/Analytics';
+import SystemLogs from './pages/admin/SystemLogs';
 
 // NGO/Hospital Pages
 import NGODashboard from './pages/ngo/Dashboard';
 import DonationRequests from './pages/ngo/DonationRequests';
 import DonationHistory from './pages/ngo/DonationHistory';
 import NGOProfile from './pages/ngo/Profile';
+import NotFound from './pages/NotFound';
 
 function App() {
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, user, initialize } = useAuthStore();
   const { theme, elderlyMode } = useThemeStore();
+
+  console.log('App Render:', { isAuthenticated, role: user?.role, userId: user?.id });
 
   useEffect(() => {
     // Apply theme
@@ -74,6 +80,10 @@ function App() {
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();
     }
+
+    // Initialize Auth Listener
+    const unsubscribe = initialize();
+    return () => unsubscribe();
   }, []);
 
   return (
@@ -93,6 +103,8 @@ function App() {
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/register" element={<AdminRegister />} />
         </Route>
 
         {/* Protected Routes */}
@@ -123,9 +135,11 @@ function App() {
             {/* Admin Routes */}
             {user?.role === 'admin' && (
               <>
-                <Route path="/dashboard" element={<AdminDashboard />} />
+                <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/dashboard" element={<Navigate to="/admin" replace />} />
                 <Route path="/users" element={<UserManagement />} />
                 <Route path="/analytics" element={<Analytics />} />
+                <Route path="/logs" element={<SystemLogs />} />
                 <Route path="/system" element={<SystemSettings />} />
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
               </>
@@ -138,9 +152,14 @@ function App() {
                 <Route path="/donation-requests" element={<DonationRequests />} />
                 <Route path="/donation-history" element={<DonationHistory />} />
                 <Route path="/profile" element={<NGOProfile />} />
+                {/* Redirect /donations to /donation-requests for NGOs avoiding confusion */}
+                <Route path="/donations" element={<Navigate to="/donation-requests" replace />} />
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
               </>
             )}
+
+            {/* Catch all inside MainLayout */}
+            <Route path="*" element={<NotFound />} />
           </Route>
         ) : (
           <Route path="*" element={<Navigate to="/login" replace />} />
@@ -151,7 +170,7 @@ function App() {
       {isAuthenticated && <MedicineAssistant />}
 
 
-    </Router>
+    </Router >
   );
 }
 

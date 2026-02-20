@@ -95,20 +95,27 @@ export default function DonationRequests() {
 
   const handleStatusUpdate = async (donationId: string, newStatus: string) => {
     try {
-      //   await db.donations.update(donationId, { 
-      //     status: newStatus as any,
-      //     updatedAt: new Date()
-      //   });
+      // If we are confirming (from the modal), we might have updated quantities.
+      // We should send the whole updated donation object or at least the medicines.
+      // For simplicity, let's assume the API accepts 'medicines' in the update body.
+
+      const updateBody: any = { status: newStatus };
+
+      if (newStatus === 'confirmed' && selectedDonation && selectedDonation.id === donationId) {
+        updateBody.medicines = selectedDonation.medicines;
+      }
+
       const response = await fetch(`${API_URL}/api/donations/${donationId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus })
+        body: JSON.stringify(updateBody)
       });
 
       if (!response.ok) throw new Error('Failed to update');
 
       toast.success('Donation status updated');
       loadDonations();
+      setShowModal(false); // Close modal on success
     } catch (error) {
       toast.error('Failed to update donation status');
     }
@@ -433,9 +440,33 @@ export default function DonationRequests() {
                           <h4 className="font-medium text-gray-900 dark:text-white">
                             {medicine.name}
                           </h4>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
-                            Quantity: {medicine.quantity} • Expires: {formatDate(medicine.expiryDate)}
-                          </p>
+                          <div className="flex items-center mt-1">
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mr-2">
+                              Quantity:
+                            </p>
+                            {selectedDonation.status === 'pending' ? (
+                              <input
+                                type="number"
+                                min="0"
+                                className="input py-0 px-2 h-7 w-20 text-sm"
+                                value={medicine.quantity === 0 ? '' : medicine.quantity}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  const newQty = val === '' ? 0 : parseInt(val);
+                                  const updatedDonation = { ...selectedDonation };
+                                  if (updatedDonation.medicines && updatedDonation.medicines[index]) {
+                                    updatedDonation.medicines[index].quantity = isNaN(newQty) ? 0 : newQty;
+                                    setSelectedDonation(updatedDonation);
+                                  }
+                                }}
+                              />
+                            ) : (
+                              <span className="text-sm font-medium">{medicine.quantity}</span>
+                            )}
+                            <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">
+                              • Expires: {formatDate(medicine.expiryDate)}
+                            </span>
+                          </div>
                         </div>
                         <div className="text-right">
                           <p className="text-sm text-gray-600 dark:text-gray-400">

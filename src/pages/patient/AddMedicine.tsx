@@ -1,12 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Camera, Save, X } from 'lucide-react';
+import { Camera, Save, X, Sparkles, Clock, Plus, Trash2 } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { db } from '../../db';
 import { Medicine } from '../../types';
 import { generateId } from '../../utils/helpers';
 import { OCRService } from '../../services/ocrService';
 import toast from 'react-hot-toast';
+import axios from 'axios';
+import { NotificationService } from '../../services/notificationService';
 
 export default function AddMedicine() {
   const navigate = useNavigate();
@@ -28,6 +30,19 @@ export default function AddMedicine() {
     manufacturer: '',
     notes: '',
   });
+
+  // Interaction State
+  const [showInteractionModal, setShowInteractionModal] = useState(false);
+  const [interactionResult, setInteractionResult] = useState<any[]>([]);
+  const [isCheckingInteraction, setIsCheckingInteraction] = useState(false);
+
+  // Schedule State
+  const [scheduleData, setScheduleData] = useState({
+    frequency: 'daily' as 'once' | 'daily' | 'weekly' | 'custom',
+    times: ['08:00'],
+    frequencyText: '',
+  });
+  const [isGeneratingSchedule, setIsGeneratingSchedule] = useState(false);
 
   const [isScanning, setIsScanning] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -100,9 +115,59 @@ export default function AddMedicine() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSmartSchedule = async () => {
+    if (!scheduleData.frequencyText.trim()) {
+      toast.error('Please describe the frequency first');
+      return;
+    }
 
+    setIsGeneratingSchedule(true);
+    try {
+      const response = await axios.post('http://localhost:5000/api/gemini/schedule', {
+        frequency: scheduleData.frequencyText
+      });
+
+      const { frequency, times } = response.data.schedule;
+
+      setScheduleData(prev => ({
+        ...prev,
+        frequency,
+        times
+      }));
+
+      toast.success('Schedule generated!');
+    } catch (error) {
+      console.error('Smart schedule error:', error);
+      toast.error('Failed to generate schedule. Please set manually.');
+    } finally {
+      setIsGeneratingSchedule(false);
+    }
+  };
+
+  const addTime = () => {
+    setScheduleData(prev => ({
+      ...prev,
+      times: [...prev.times, '12:00']
+    }));
+  };
+
+  const removeTime = (index: number) => {
+    setScheduleData(prev => ({
+      ...prev,
+      times: prev.times.filter((_, i) => i !== index)
+    }));
+  };
+
+  const updateTime = (index: number, value: string) => {
+    const newTimes = [...scheduleData.times];
+    newTimes[index] = value;
+    setScheduleData(prev => ({
+      ...prev,
+      times: newTimes
+    }));
+  };
+
+  const saveMedicine = async () => {
     if (!user) return;
 
     try {
@@ -124,7 +189,7 @@ export default function AddMedicine() {
         // Add new medicine
         const medicine: Medicine = {
           id: generateId('med-'),
-          userId: user.id,
+          userId: user.id || '',
           name: formData.name,
           category: formData.category,
           dosage: formData.dosage,
@@ -138,11 +203,92 @@ export default function AddMedicine() {
         };
 
         await db.medicines.add(medicine);
-        toast.success('Medicine added successfully!');
+
+        // Add Schedule
+        if (scheduleData.times.length > 0) {
+          const schedule = {
+            id: generateId('schedule-'),
+            medicineId: medicine.id,
+            userId: user.id || '',
+            frequency: scheduleData.frequency,
+            times: scheduleData.times,
+            dosagePerIntake: formData.dosage, // Default to medicine dosage
+            startDate: new Date(),
+            reminderEnabled: true,
+            taken: [],
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          };
+
+          await db.schedules.add(schedule);
+
+          // Schedule initial notifications
+          for (const time of scheduleData.times) {
+            await NotificationService.scheduleReminder(
+              user.id || '',
+              medicine.name,
+              time,
+              new Date()
+            );
+          }
+        }
+
+        toast.success('Medicine and schedule added successfully!');
       }
       navigate('/medicines');
     } catch (error) {
       toast.error(isEditMode ? 'Failed to update medicine' : 'Failed to add medicine');
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+
+    // Check for unique medicine name
+    try {
+      if (!isEditMode) { // Only check on new additions
+        const existingMeds = await db.medicines.where('userId').equals(user.id).toArray();
+        const duplicate = existingMeds.find(
+          m => m.name.toLowerCase() === formData.name.toLowerCase()
+        );
+        if (duplicate) {
+          toast.error('You have already added this medicine.');
+          return;
+        }
+
+        // Drug Interaction Check
+        setIsCheckingInteraction(true);
+        const medsToCheck = [
+          ...existingMeds,
+          { name: formData.name, dosage: formData.dosage }
+        ];
+
+        const response = await axios.post('http://localhost:5000/api/gemini/drug-interactions', {
+          medicines: medsToCheck
+        });
+
+        const interactions = response.data.interactions;
+        const highSeverity = interactions.filter((i: any) =>
+          ['high', 'severe', 'major', 'moderate'].includes(i.severity.toLowerCase())
+        );
+
+        if (highSeverity.length > 0) {
+          setInteractionResult(highSeverity);
+          setShowInteractionModal(true);
+          setIsCheckingInteraction(false);
+          return; // Stop submission to show warning
+        }
+      }
+
+      setIsCheckingInteraction(false);
+      await saveMedicine();
+
+    } catch (error) {
+      console.error('Pre-check error:', error);
+      setIsCheckingInteraction(false);
+      // Fallback: proceed to save if check fails (don't block user on API error)
+      await saveMedicine();
     }
   };
 
@@ -350,11 +496,98 @@ export default function AddMedicine() {
           </div>
         </div>
 
+        {/* Smart Schedule Section */}
+        <div className="border-t pt-6">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <Clock className="text-primary-600" size={20} />
+            Smart Schedule
+          </h3>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                How often do you take this?
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  className="input flex-1"
+                  placeholder='e.g., "Twice a day after meals" or "Every morning at 8"'
+                  value={scheduleData.frequencyText}
+                  onChange={(e) => setScheduleData(prev => ({ ...prev, frequencyText: e.target.value }))}
+                />
+                <button
+                  type="button"
+                  onClick={handleSmartSchedule}
+                  disabled={isGeneratingSchedule}
+                  className="btn btn-secondary whitespace-nowrap"
+                >
+                  {isGeneratingSchedule ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-600"></div>
+                  ) : (
+                    <Sparkles size={16} className="text-yellow-500 mr-2" />
+                  )}
+                  Auto-Schedule
+                </button>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                AI will automatically set the best times based on your description.
+              </p>
+            </div>
+
+            {/* Generated Times */}
+            {scheduleData.times.length > 0 && (
+              <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
+                <div className="flex justify-between items-center mb-3">
+                  <label className="text-sm font-medium">Scheduled Times</label>
+                  <button type="button" onClick={addTime} className="text-primary-600 text-sm flex items-center gap-1 hover:underline">
+                    <Plus size={14} /> Add Time
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {scheduleData.times.map((time, index) => (
+                    <div key={index} className="flex gap-2">
+                      <input
+                        type="time"
+                        className="input"
+                        value={time}
+                        onChange={(e) => updateTime(index, e.target.value)}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeTime(index)}
+                        className="text-red-500 hover:text-red-600 p-2"
+                        title="Remove time"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Submit Button */}
         <div className="flex space-x-3 mt-6">
-          <button type="submit" className="btn btn-primary flex-1">
-            <Save size={18} />
-            <span>{isEditMode ? 'Update Medicine' : 'Save Medicine'}</span>
+          <button
+            type="submit"
+            disabled={isCheckingInteraction}
+            className="btn btn-primary flex-1"
+          >
+            {isCheckingInteraction ? (
+              <div className="flex items-center justify-center gap-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                <span>Checking Interactions...</span>
+              </div>
+            ) : (
+              <>
+                <Save size={18} />
+                <span>{isEditMode ? 'Update Medicine' : 'Save Medicine'}</span>
+              </>
+            )}
           </button>
           <button
             type="button"
@@ -364,7 +597,56 @@ export default function AddMedicine() {
             Cancel
           </button>
         </div>
-      </form>
-    </div>
+      </form >
+
+      {/* Interaction Warning Modal */}
+      {showInteractionModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full p-6 border-l-4 border-red-500">
+            <h3 className="text-xl font-bold text-red-600 mb-2 flex items-center gap-2">
+              <span className="text-2xl">⚠️</span> Warning: Interaction Detected
+            </h3>
+
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
+              Adding <strong>{formData.name}</strong> may cause a serious interaction with your current medicines:
+            </p>
+
+            <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg mb-6 max-h-40 overflow-y-auto">
+              {interactionResult.map((interaction, idx) => (
+                <div key={idx} className="mb-2 last:mb-0">
+                  <p className="font-semibold text-red-700 dark:text-red-400">
+                    {interaction.medicines.join(' + ')}
+                  </p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    {interaction.description}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1 italic">
+                    {interaction.recommendation}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowInteractionModal(false)}
+                className="btn btn-secondary flex-1"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowInteractionModal(false);
+                  saveMedicine();
+                }}
+                className="btn bg-red-600 hover:bg-red-700 text-white flex-1"
+              >
+                Proceed Anyway
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div >
   );
 }

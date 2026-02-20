@@ -8,7 +8,7 @@ export class GeminiService {
     this.apiKey = process.env.GEMINI_API_KEY || '';
     this.model = null;
     this.isConfigured = false;
-    
+
     this.initializeGemini();
   }
 
@@ -41,7 +41,7 @@ export class GeminiService {
     }
 
     try {
-      const fullPrompt = context 
+      const fullPrompt = context
         ? `${context}\n\nUser Question: ${prompt}`
         : prompt;
 
@@ -54,30 +54,49 @@ export class GeminiService {
     }
   }
 
-  async analyzeSymptoms(symptoms) {
+  async analyzeSymptoms(symptoms, userMedicines = []) {
     if (!this.isConfigured) {
       return this.getSymptomFallback(symptoms);
     }
 
     try {
+      console.log(`Analyzing symptoms for user with ${userMedicines.length} medicines.`);
       const symptomDescription = symptoms.map(s =>
         `${s.name} (${s.severity} severity, lasting ${s.duration})`
       ).join(', ');
 
-      const prompt = `You are a medical assistant AI. Provide general health information only. Always recommend consulting a healthcare professional for proper diagnosis and treatment.
+      const medicineList = userMedicines.map(m => `${m.name} (${m.category})`).join(', ') || 'No medicines in cabinet';
 
-Analyze these symptoms: ${symptomDescription}
+      const prompt = `You are a medical assistant AI. 
+      
+      User's Symptoms: ${symptomDescription}
+      User's Medicine Cabinet: ${medicineList}
 
-Please provide your analysis in this exact format:
-1) Possible causes (list 3-4 common possibilities)
-2) Self-care recommendations (practical steps the person can take)
-3) When to see a doctor (clear guidance on when professional medical help is needed)
+      Analyze the symptoms and check if any of the user's existing medicines might be helpful.
 
-Keep your response concise but informative. Always end by emphasizing that this is not a diagnosis and they should consult healthcare professionals.`;
+      Provide your analysis in this exact format:
+      
+      SECTION 1: ANALYSIS
+      1) Possible causes (list 3-4 common possibilities)
+      2) Self-care recommendations (practical steps)
+      3) When to see a doctor (clear guidance)
+
+      SECTION 2: SUGGESTED_MEDICINES
+      If any medicine from the user's cabinet is appropriate for these symptoms (e.g., Painkiller for headache), list them here.
+      Format:
+      - Medicine Name: [Why it might help]
+      
+      If none match, say "No matching medicines found in your cabinet."
+
+      IMPORTANT:
+      - Only suggest medicines FROM THE USER'S CABINET. Do not suggest new medicines to buy.
+      - Always end with: "Disclaimer: This is not a prescription. Consult a healthcare professional before taking any medication."`;
 
       const result = await this.model.generateContent(prompt);
       const response = await result.response;
-      return response.text();
+      const text = response.text();
+      console.log('Gemini Analysis Response:', text.substring(0, 100) + '...'); // Log preview
+      return text;
     } catch (error) {
       console.error('Symptom analysis error:', error);
       return this.getSymptomFallback(symptoms);
@@ -114,7 +133,7 @@ Separate each tip with ---`;
       const result = await this.model.generateContent(prompt);
       const response = await result.response;
       const text = response.text();
-      
+
       return this.parseTips(text, category || 'general');
     } catch (error) {
       console.error('Health tips error:', error);
@@ -156,11 +175,60 @@ All medicines appear safe to take together (but always consult healthcare provid
       const result = await this.model.generateContent(prompt);
       const response = await result.response;
       const text = response.text();
-      
+
       return this.parseInteractions(text, medicines);
     } catch (error) {
       console.error('Drug interaction error:', error);
       return this.getFallbackDrugInteractions(medicines);
+    }
+  }
+
+  async generateSchedule(frequencyText) {
+    if (!this.isConfigured) {
+      console.warn('Gemini not configured, returning default schedule');
+      return {
+        frequency: 'daily',
+        times: ['09:00', '21:00'] // Default fallback
+      };
+    }
+
+    try {
+      const prompt = `Convert this medicine frequency description into a structured schedule: "${frequencyText}"
+
+      Return ONLY a JSON object with this format:
+      {
+        "frequency": "once" | "daily" | "weekly" | "custom",
+        "times": ["HH:MM", "HH:MM"] (24-hour format array of strings)
+      }
+
+      Rules:
+      - "Morning" = 08:00
+      - "Afternoon" = 13:00
+      - "Evening" = 18:00
+      - "Night"/ "Bedtime" = 22:00
+      - "After food" usually means after breakfast/lunch/dinner depending on context. Default to 09:00, 14:00, 20:00 if unspecified.
+      - "Twice a day" = 09:00, 21:00
+      - "Thrice a day" = 09:00, 14:00, 21:00
+      - If frequency is unclear, default to "daily" and ["09:00"].
+
+      Example:
+      Input: "Three times a day after meals"
+      Output: { "frequency": "daily", "times": ["09:00", "14:00", "20:00"] }`;
+
+      const result = await this.model.generateContent(prompt);
+      const response = await result.response;
+      let text = response.text();
+
+      // Clean up markdown code blocks if present
+      text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+
+      return JSON.parse(text);
+    } catch (error) {
+      console.error('Schedule generation error:', error);
+      return {
+        frequency: 'daily',
+        times: ['09:00', '21:00']
+      };
     }
   }
 
@@ -200,23 +268,28 @@ All medicines appear safe to take together (but always consult healthcare provid
       return [];
     }
 
-    const sections = response.split(/INTERACTION|Severity:|Medicines:|Description:|Recommendation:/g);
-    
-    for (let i = 1; i < sections.length; i += 5) {
-      if (i + 3 < sections.length) {
-        const severity = sections[i]?.trim() || 'moderate';
-        const medicinesStr = sections[i + 1]?.trim() || medicines.map(m => m.name).join(', ');
-        const description = sections[i + 2]?.trim() || 'Potential interaction detected.';
-        const recommendation = sections[i + 3]?.trim() || 'Consult your healthcare provider before combining these medicines.';
+    // Split by "INTERACTION" to handle multiple interactions
+    const distinctInteractions = response.split(/INTERACTION/i).filter(s => s.trim().length > 0);
+
+    for (const section of distinctInteractions) {
+      // Extract fields using regex
+      const severityMatch = section.match(/Severity:\s*(.+)/i);
+      const medicinesMatch = section.match(/Medicines:\s*(.+)/i);
+      const descriptionMatch = section.match(/Description:\s*(.+)/i);
+      const recommendationMatch = section.match(/Recommendation:\s*(.+)/i);
+
+      if (severityMatch && medicinesMatch) {
+        const severity = severityMatch[1].trim().toLowerCase();
+        const medicinesStr = medicinesMatch[1].trim();
+        const description = descriptionMatch ? descriptionMatch[1].trim() : 'Potential interaction detected.';
+        const recommendation = recommendationMatch ? recommendationMatch[1].trim() : 'Consult your healthcare provider.';
 
         interactions.push({
-          severity: severity.toLowerCase(),
+          severity,
           medicines: medicinesStr.split(',').map(m => m.trim()),
           description,
           recommendation,
         });
-
-        if (interactions.length >= 3) break;
       }
     }
 
@@ -301,10 +374,10 @@ All medicines appear safe to take together (but always consult healthcare provid
     }
 
     return [{
-      severity: 'moderate',
+      severity: 'severe',
       medicines: medicines.map(m => m.name),
-      description: 'Potential interactions between multiple medicines. Always consult with healthcare professionals before combining medicines.',
-      recommendation: 'Consult your doctor or pharmacist to verify these medicines are safe to take together. Consider timing, food interactions, and monitoring for side effects.',
+      description: 'Potential interactions detected (network fallback). Always consult with healthcare professionals.',
+      recommendation: 'Consult your doctor or pharmacist to verify these medicines are safe to take together.',
     }];
   }
 }

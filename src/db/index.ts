@@ -43,7 +43,7 @@ export const db = new MediloopDB();
 // Initialize with sample data
 export async function initializeSampleData() {
   const userCount = await db.users.count();
-  
+
   if (userCount === 0) {
     // Add sample NGOs
     await db.ngos.bulkAdd([
