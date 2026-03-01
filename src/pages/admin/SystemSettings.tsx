@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import {
-  Settings,
   Bell,
   Database,
   Shield,
@@ -9,18 +8,14 @@ import {
   RefreshCw,
   AlertTriangle,
   CheckCircle,
-  XCircle,
   Download,
   Upload,
-  Trash2,
   Key,
   Globe,
   Mail,
   Smartphone,
-  Clock,
   Users,
-  Heart,
-  Pill
+  Heart
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import axios from 'axios';

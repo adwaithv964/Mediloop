@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
     Terminal,
-    Search,
     Filter,
     AlertTriangle,
     Info,

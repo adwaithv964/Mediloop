@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mediloop – Level 0 Data Flow Diagram</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f5f5f0;
+            font-family: 'Times New Roman', Times, serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        h1 {
+            font-size: 22px;
+            font-weight: bold;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            text-align: center;
+            color: #111;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 36px;
+            text-align: center;
+            font-style: italic;
+        }
+
+        .diagram-wrapper {
+            background: #ffffff;
+            border: 1px solid #bbb;
+            padding: 20px 30px;
+            box-shadow: 5px 5px 16px rgba(0, 0, 0, 0.14);
+        }
+
+        .legend {
+            margin-top: 28px;
+            display: flex;
+            gap: 32px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            font-size: 13px;
+            color: #333;
+        }
+
+        .legend-box {
+            width: 30px;
+            height: 20px;
+            border: 2px solid #333;
+            background: #fff;
+        }
+
+        .legend-ellipse {
+            width: 44px;
+            height: 24px;
+            border: 2px solid #333;
+            border-radius: 50%;
+            background: #fff;
+        }
+
+        .legend-cylinder {
+            width: 30px;
+            height: 24px;
+            border: 2px solid #333;
+            background: #eaeaea;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>LEVEL 0</h1>
+    <p class="subtitle">Context Data Flow Diagram &nbsp;–&nbsp;
+        <strong>Mediloop Health Management System</strong>
+    </p>
+
+    <div class="diagram-wrapper">
+        <!--
+      LAYOUT:
+        Left  col  (x≈40-170):  External Entities – Patient, Admin, NGO
+        Centre      (cx=440):    Process ellipse – Mediloop System
+        Right  col  (x≈690):    Data Store – MongoDB DB
+    -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="880" height="530" viewBox="0 0 880 530">
+
+            <!-- ── Arrow-head marker ─────────────────────────────────── -->
+            <defs>
+                <marker id="ah" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                    <polygon points="0 0, 9 3.5, 0 7" fill="#222" />
+                </marker>
+            </defs>
+
+            <!-- ── Outer dashed border ────────────────────────────────── -->
+            <rect x="8" y="8" width="864" height="514" fill="none" stroke="#aaa" stroke-width="1"
+                stroke-dasharray="5,4" />
+
+            <!-- ════════════════════════════════════════════════════════ -->
+            <!--  EXTERNAL ENTITIES  (left side)                         -->
+            <!-- ════════════════════════════════════════════════════════ -->
+
+            <!-- Patient -->
+            <rect x="30" y="60" width="140" height="52" fill="#fff" stroke="#333" stroke-width="2" rx="3" />
+            <text x="100" y="91" text-anchor="middle" font-size="15" font-weight="bold">Patient</text>
+
+            <!-- Admin -->
+            <rect x="30" y="210" width="140" height="52" fill="#fff" stroke="#333" stroke-width="2" rx="3" />
+            <text x="100" y="241" text-anchor="middle" font-size="15" font-weight="bold">Admin</text>
+
+            <!-- NGO -->
+            <rect x="30" y="380" width="140" height="52" fill="#fff" stroke="#333" stroke-width="2" rx="3" />
+            <text x="100" y="411" text-anchor="middle" font-size="15" font-weight="bold">NGO</text>
+
+            <!-- ════════════════════════════════════════════════════════ -->
+            <!--  CENTRAL PROCESS ELLIPSE                                -->
+            <!-- ════════════════════════════════════════════════════════ -->
+            <ellipse cx="440" cy="265" rx="138" ry="80" fill="#fff" stroke="#333" stroke-width="2.5" />
+            <text x="440" y="251" text-anchor="middle" font-size="14" font-weight="bold">Mediloop</text>
+            <text x="440" y="269" text-anchor="middle" font-size="14" font-weight="bold">Health Management</text>
+            <text x="440" y="287" text-anchor="middle" font-size="14" font-weight="bold">System</text>
+
+            <!-- ════════════════════════════════════════════════════════ -->
+            <!--  DATABASE (cylinder)                                    -->
+            <!-- ════════════════════════════════════════════════════════ -->
+            <!-- body -->
+            <rect x="695" y="235" width="120" height="70" fill="#f0f0f0" stroke="#333" stroke-width="2" />
+            <!-- top cap -->
+            <ellipse cx="755" cy="235" rx="60" ry="17" fill="#ddd" stroke="#333" stroke-width="2" />
+            <!-- bottom cap -->
+            <ellipse cx="755" cy="305" rx="60" ry="17" fill="#e8e8e8" stroke="#333" stroke-width="2" />
+            <text x="755" y="275" text-anchor="middle" font-size="13" font-weight="bold">MongoDB</text>
+            <text x="755" y="336" text-anchor="middle" font-size="13" font-weight="bold">DB</text>
+
+            <!-- ════════════════════════════════════════════════════════ -->
+            <!--  DATA FLOWS                                              -->
+            <!--  Convention:  upper path = entity→system                -->
+            <!--               lower path = system→entity                -->
+            <!-- ════════════════════════════════════════════════════════ -->
+
+            <!-- ── PATIENT ─────────────────────────────────────────── -->
+            <!-- Patient → System  (upper line) -->
+            <line x1="170" y1="74" x2="306" y2="207" stroke="#222" stroke-width="1.6" marker-end="url(#ah)" />
+            <!-- label along upper arrow -->
+            <text transform="translate(192,110) rotate(47)" font-size="10.5" fill="#333">
+                <tspan x="0" dy="0">Registration / Login</tspan>
+                <tspan x="0" dy="14">Medicine Schedule</tspan>
+                <tspan x="0" dy="14">Health Records / AI Query</tspan>
+                <tspan x="0" dy="14">Family Sync / Donation Req.</tspan>
+            </text>
+
+            <!-- System → Patient  (lower line) -->
+            <line x1="302" y1="198" x2="171" y2="82" stroke="#222" stroke-width="1.6" stroke-dasharray="6,3"
+                marker-end="url(#ah)" />
+            <!-- label along lower arrow -->
+            <text transform="translate(158,148) rotate(47)" font-size="10.5" fill="#666">
+                <tspan x="0" dy="0">Dashboard Data</tspan>
+                <tspan x="0" dy="14">Reminders / Alerts</tspan>
+                <tspan x="0" dy="14">AI Recommendations</tspan>
+            </text>
+
+            <!-- ── ADMIN ────────────────────────────────────────────── -->
+            <!-- Admin → System -->
+            <line x1="170" y1="246" x2="303" y2="256" stroke="#222" stroke-width="1.6" marker-end="url(#ah)" />
+            <text x="178" y="238" font-size="10.5" fill="#333">Manage Users / Medicines</text>
+            <text x="178" y="251" font-size="10.5" fill="#333">View Logs / System Config</text>
+
+            <!-- System → Admin -->
+            <line x1="303" y1="268" x2="170" y2="258" stroke="#222" stroke-width="1.6" stroke-dasharray="6,3"
+                marker-end="url(#ah)" />
+            <text x="172" y="284" font-size="10.5" fill="#666">Reports / User Stats</text>
+            <text x="172" y="297" font-size="10.5" fill="#666">Audit Logs / Alerts</text>
+
+            <!-- ── NGO ──────────────────────────────────────────────── -->
+            <!-- NGO → System -->
+            <line x1="170" y1="400" x2="306" y2="328" stroke="#222" stroke-width="1.6" marker-end="url(#ah)" />
+            <!-- label -->
+            <text x="178" y="348" font-size="10.5" fill="#333">Donation Offers</text>
+            <text x="178" y="361" font-size="10.5" fill="#333">NGO Registration / Profile</text>
+
+            <!-- System → NGO -->
+            <line x1="302" y1="338" x2="170" y2="410" stroke="#222" stroke-width="1.6" stroke-dasharray="6,3"
+                marker-end="url(#ah)" />
+            <text x="172" y="388" font-size="10.5" fill="#666">Donation Requests</text>
+            <text x="172" y="401" font-size="10.5" fill="#666">Confirmation / Status</text>
+
+            <!-- ── SYSTEM ↔ DATABASE ────────────────────────────────── -->
+            <!-- System → DB -->
+            <line x1="578" y1="255" x2="693" y2="255" stroke="#222" stroke-width="1.6" marker-end="url(#ah)" />
+            <text x="596" y="247" font-size="10.5" fill="#333">Store / Update Records</text>
+
+            <!-- DB → System -->
+            <line x1="693" y1="278" x2="578" y2="278" stroke="#222" stroke-width="1.6" stroke-dasharray="6,3"
+                marker-end="url(#ah)" />
+            <text x="596" y="297" font-size="10.5" fill="#666">Retrieve / Query Data</text>
+
+        </svg>
+    </div>
+
+    <!-- LEGEND -->
+    <div class="legend">
+        <div class="legend-item">
+            <div class="legend-box"></div>
+            <span>External Entity (Actor)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-ellipse"></div>
+            <span>Process (System)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-cylinder"></div>
+            <span>Data Store (Database)</span>
+        </div>
+        <div class="legend-item">
+            <svg width="44" height="16">
+                <defs>
+                    <marker id="ah2" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+                        <polygon points="0 0, 8 3, 0 6" fill="#333" />
+                    </marker>
+                </defs>
+                <line x1="0" y1="8" x2="36" y2="8" stroke="#333" stroke-width="1.6" marker-end="url(#ah2)" />
+            </svg>
+            <span>Data Flow (Input)</span>
+        </div>
+        <div class="legend-item">
+            <svg width="44" height="16">
+                <defs>
+                    <marker id="ah3" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+                        <polygon points="0 0, 8 3, 0 6" fill="#666" />
+                    </marker>
+                </defs>
+                <line x1="0" y1="8" x2="36" y2="8" stroke="#666" stroke-width="1.6" stroke-dasharray="6,3"
+                    marker-end="url(#ah3)" />
+            </svg>
+            <span>Data Flow (Output)</span>
+        </div>
+    </div>
+
+    <p style="margin-top:18px;font-size:11.5px;color:#888;text-align:center;">
+        Mediloop Health Management System &nbsp;|&nbsp;
+        Level 0 Context Data Flow Diagram
+    </p>
+
+</body>
+
+</html>

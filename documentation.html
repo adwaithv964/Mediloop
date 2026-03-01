@@ -1,0 +1,2123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mediloop – Project Documentation</title>
+    <style>
+        body {
+            font-family: "Times New Roman", serif;
+            font-size: 13pt;
+            color: #111;
+            background: #fff;
+            margin: 0;
+            padding: 0;
+        }
+
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            padding: 25mm 25mm 20mm 30mm;
+            box-sizing: border-box;
+            page-break-after: always;
+        }
+
+        h1 {
+            font-size: 20pt;
+            text-align: center;
+            text-transform: uppercase;
+            border-bottom: 2px solid #000;
+            padding-bottom: 6px;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            font-size: 15pt;
+            text-transform: uppercase;
+            margin-top: 22px;
+            margin-bottom: 6px;
+            border-left: 4px solid #2563eb;
+            padding-left: 8px;
+        }
+
+        h3 {
+            font-size: 13pt;
+            margin-top: 14px;
+            margin-bottom: 4px;
+            text-decoration: underline;
+        }
+
+        p {
+            text-align: justify;
+            line-height: 1.7;
+            margin: 6px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+        }
+
+        th,
+        td {
+            border: 1px solid #555;
+            padding: 7px 10px;
+            font-size: 12pt;
+        }
+
+        th {
+            background: #dbeafe;
+            font-weight: bold;
+        }
+
+        .toc-title {
+            font-size: 17pt;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 18px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .toc-entry {
+            display: flex;
+            justify-content: space-between;
+            padding: 3px 0;
+            font-size: 12pt;
+        }
+
+        .toc-entry.main {
+            font-weight: bold;
+            margin-top: 8px;
+        }
+
+        .toc-entry.sub {
+            padding-left: 20px;
+        }
+
+        .toc-entry.sub2 {
+            padding-left: 40px;
+        }
+
+        .dots {
+            flex: 1;
+            border-bottom: 1px dotted #555;
+            margin: 0 6px 3px;
+        }
+
+        .chapter-label {
+            font-size: 11pt;
+            color: #555;
+            text-align: right;
+            margin-bottom: 4px;
+        }
+
+        .cover {
+            text-align: center;
+            padding-top: 60mm;
+        }
+
+        .cover h1 {
+            font-size: 28pt;
+            border: none;
+        }
+
+        .cover .sub {
+            font-size: 14pt;
+            color: #444;
+            margin: 8px 0;
+        }
+
+        .cover .badge {
+            display: inline-block;
+            background: #2563eb;
+            color: #fff;
+            padding: 4px 18px;
+            border-radius: 20px;
+            font-size: 11pt;
+            margin-top: 20px;
+        }
+
+        ul {
+            margin: 6px 0 6px 22px;
+            line-height: 1.7;
+        }
+
+        .highlight {
+            background: #eff6ff;
+            border-left: 3px solid #2563eb;
+            padding: 8px 12px;
+            margin: 10px 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        @media print {
+            .page {
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ═══════════════════ COVER PAGE ═══════════════════ -->
+    <div class="page cover">
+        <p class="sub">Project Documentation</p>
+        <h1>Mediloop</h1>
+        <p class="sub" style="font-size:16pt;">Medicine Management &amp; Donation Platform</p>
+        <hr style="width:60%;margin:20px auto;" />
+        <p class="sub">A comprehensive web-based platform for medicine management,<br />expiry tracking, and
+            NGO/hospital donations.</p>
+        <span class="badge">Version 1.0.0 &nbsp;|&nbsp; 2024</span>
+        <br /><br />
+        <table style="width:70%;margin:30px auto;text-align:left;">
+            <tr>
+                <th>Technology</th>
+                <td>React 18 · TypeScript · Node.js · MongoDB · Firebase</td>
+            </tr>
+            <tr>
+                <th>Platform</th>
+                <td>Web (PWA)</td>
+            </tr>
+            <tr>
+                <th>Roles</th>
+                <td>Patient · NGO/Hospital · Admin</td>
+            </tr>
+            <tr>
+                <th>License</th>
+                <td>MIT</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- ═══════════════════ TABLE OF CONTENTS ═══════════════════ -->
+    <div class="page">
+        <div class="toc-title">Table of Contents</div>
+        <div class="toc-entry main"><span>1. Introduction</span><span class="dots"></span><span>01</span></div>
+        <div class="toc-entry sub"><span>1.1 Purpose</span><span class="dots"></span><span>01</span></div>
+        <div class="toc-entry sub"><span>1.2 Scope</span><span class="dots"></span><span>02</span></div>
+        <div class="toc-entry main"><span>2. System Study and Analysis</span><span class="dots"></span><span>04</span>
+        </div>
+        <div class="toc-entry sub"><span>2.1 Preliminary Investigation</span><span class="dots"></span><span>04</span>
+        </div>
+        <div class="toc-entry sub"><span>2.2 Existing System</span><span class="dots"></span><span>05</span></div>
+        <div class="toc-entry sub"><span>2.3 Proposed System</span><span class="dots"></span><span>06</span></div>
+        <div class="toc-entry sub2"><span>2.3.1 Advantages of Proposed System</span><span
+                class="dots"></span><span>06</span></div>
+        <div class="toc-entry sub"><span>2.4 Module Description</span><span class="dots"></span><span>07</span></div>
+        <div class="toc-entry sub"><span>2.5 Feasibility Study</span><span class="dots"></span><span>09</span></div>
+        <div class="toc-entry main"><span>3. System Requirement Specification</span><span
+                class="dots"></span><span>14</span></div>
+        <div class="toc-entry sub"><span>3.1 Software Specification</span><span class="dots"></span><span>14</span>
+        </div>
+        <div class="toc-entry sub"><span>3.2 Hardware Specification</span><span class="dots"></span><span>15</span>
+        </div>
+        <div class="toc-entry sub"><span>3.3 Software Tools Used</span><span class="dots"></span><span>16</span></div>
+        <div class="toc-entry main"><span>4. System Design</span><span class="dots"></span><span>18</span></div>
+        <div class="toc-entry main"><span>5. System Development</span><span class="dots"></span><span>41</span></div>
+        <div class="toc-entry main"><span>6. System Testing</span><span class="dots"></span><span>47</span></div>
+        <div class="toc-entry main"><span>7. System Implementation</span><span class="dots"></span><span>52</span></div>
+        <div class="toc-entry main"><span>8. Future Enhancement</span><span class="dots"></span><span>56</span></div>
+        <div class="toc-entry main"><span>9. Conclusion</span><span class="dots"></span><span>58</span></div>
+        <div class="toc-entry main"><span>10. Appendix A: Source Code</span><span class="dots"></span><span>60</span>
+        </div>
+        <div class="toc-entry main"><span>11. Appendix B: Screenshots</span><span class="dots"></span><span>72</span>
+        </div>
+        <div class="toc-entry main"><span>12. Bibliography</span><span class="dots"></span><span>81</span></div>
+    </div>
+
+    <!-- ═══════════════════ CHAPTER 1: INTRODUCTION ═══════════════════ -->
+    <div class="page">
+        <div class="chapter-label">Chapter 1</div>
+        <h1>Introduction</h1>
+
+        <h2>1.1 Purpose</h2>
+        <p>The purpose of Mediloop is to address the critical gap in personal medicine management by providing a
+            unified, intelligent, and offline-capable platform. Millions of individuals struggle to track medication
+            schedules, monitor expiry dates, and manage unused medicines responsibly. Mediloop resolves these challenges
+            through a feature-rich web application that empowers patients, enables trusted NGOs and hospitals to receive
+            medicine donations, and gives administrators full oversight of the ecosystem.</p>
+        <p>The system serves three primary objectives:</p>
+        <ul>
+            <li><strong>Medication Adherence:</strong> Ensure patients take the right medicine at the right time through
+                smart reminders and dashboards.</li>
+            <li><strong>Expiry Management:</strong> Reduce medicine wastage with color-coded visual alerts and timely
+                notifications.</li>
+            <li><strong>Community Donation:</strong> Bridge the gap between surplus medicine holders and certified NGOs
+                or hospitals that distribute to those in need.</li>
+        </ul>
+        <p>This document serves as a complete technical and functional reference for the Mediloop project, covering
+            system design, development, testing, and deployment.</p>
+
+        <h2>1.2 Scope</h2>
+        <p>Mediloop is a Progressive Web Application (PWA) built with an offline-first architecture, ensuring usability
+            even in low-connectivity environments. The scope of the system encompasses:</p>
+        <ul>
+            <li><strong>Patient Module:</strong> Medicine inventory management, OCR scanning, schedule reminders,
+                donation requests, health records, AI assistant, and report generation.</li>
+            <li><strong>NGO / Hospital Module:</strong> Viewing donation offers, confirming pickups, tracking received
+                medicines, and maintaining distribution records.</li>
+            <li><strong>Admin Module:</strong> User management, platform analytics, notification configuration, system
+                settings, and data security oversight.</li>
+            <li><strong>AI Integration:</strong> Context-aware health suggestions powered by the Gemini API.</li>
+            <li><strong>Cloud Sync:</strong> Optional Firebase Firestore synchronisation for multi-device access.</li>
+        </ul>
+        <div class="highlight">
+            <strong>Note:</strong> The platform is designed primarily for web browsers (Chrome, Firefox, Edge, Safari).
+            A companion Android application is planned as a future enhancement.
+        </div>
+    </div>
+
+    <!-- ═══════════════════ CHAPTER 2: SYSTEM STUDY ═══════════════════ -->
+    <div class="page">
+        <div class="chapter-label">Chapter 2</div>
+        <h1>System Study and Analysis</h1>
+
+        <h2>2.1 Preliminary Investigation</h2>
+        <p>The preliminary investigation was undertaken to evaluate the need for a centralised medicine management
+            system. Key findings from the investigation are summarised below:</p>
+        <table>
+            <tr>
+                <th>Finding</th>
+                <th>Observation</th>
+            </tr>
+            <tr>
+                <td>Medicine wastage</td>
+                <td>Approximately 30–40% of household medicines expire unused each year due to lack of tracking systems.
+                </td>
+            </tr>
+            <tr>
+                <td>Missed doses</td>
+                <td>Non-adherence to medication schedules accounts for significant health complications in
+                    chronic-disease patients.</td>
+            </tr>
+            <tr>
+                <td>Donation barriers</td>
+                <td>Patients willing to donate surplus medicines have no reliable or certified channel to do so.</td>
+            </tr>
+            <tr>
+                <td>Elderly usability</td>
+                <td>Existing apps are often not optimised for elderly users who need larger fonts and simpler
+                    navigation.</td>
+            </tr>
+        </table>
+        <p>Based on this investigation, the project team concluded that a dedicated platform combining medicine
+            management and donation coordination would provide measurable social and health benefits.</p>
+
+        <h2>2.2 Existing System</h2>
+        <p>Existing solutions in the market include general reminder apps and standalone pharmacy management tools.
+            Their limitations are:</p>
+        <ul>
+            <li>No integration between medicine tracking and donation features.</li>
+            <li>No OCR-based medicine data extraction.</li>
+            <li>Limited or no offline functionality.</li>
+            <li>No connection to verified NGOs or hospitals for ethical donation.</li>
+            <li>Absence of AI-powered health guidance personalised to the user's medicine list.</li>
+            <li>Poor accessibility for elderly or differently-abled users.</li>
+        </ul>
+
+        <h2>2.3 Proposed System</h2>
+        <p>Mediloop proposes a holistic solution that combines all the above missing capabilities into one cohesive web
+            platform. The system features an offline-first architecture using IndexedDB (via Dexie.js), optional cloud
+            synchronisation through Firebase Firestore, and an intuitive UI built with React 18 and TailwindCSS.</p>
+
+        <h3>2.3.1 Advantages of Proposed System</h3>
+        <ul>
+            <li><strong>Offline-First:</strong> Full functionality without internet using IndexedDB.</li>
+            <li><strong>OCR Scanning:</strong> Tesseract.js powered medicine strip scanning for quick data entry.</li>
+            <li><strong>Color-Coded Expiry Alerts:</strong> Green / Yellow / Red / Gray visual system to prioritise
+                action.</li>
+            <li><strong>Donation Ecosystem:</strong> Verified NGO and hospital network for ethical medicine
+                redistribution.</li>
+            <li><strong>AI Health Assistant:</strong> Personalised guidance using the Gemini API.</li>
+            <li><strong>Elderly-Friendly Mode:</strong> Enlarged UI, voice commands, and simplified navigation.</li>
+            <li><strong>End-to-End Encryption:</strong> AES encryption ensures patient data privacy.</li>
+            <li><strong>PWA Support:</strong> Installable on desktop and mobile for near-native experience.</li>
+        </ul>
+
+        <h2>2.4 Module Description</h2>
+        <h3>Patient Module</h3>
+        <p>The Patient module is the core of Mediloop. It allows registered patients to:</p>
+        <ul>
+            <li>Maintain a personalised medicine inventory with category tagging.</li>
+            <li>Scan medicine strips using the device camera (OCR).</li>
+            <li>Set daily/weekly dosage schedules with browser push notifications.</li>
+            <li>View color-coded expiry status and receive refill alerts.</li>
+            <li>Initiate donation requests to nearby NGOs or hospitals.</li>
+            <li>Generate PDF/Excel reports for doctor visits.</li>
+            <li>Access the AI Health Assistant for personalised suggestions.</li>
+            <li>Enable Elderly-Friendly Mode for an accessible interface.</li>
+        </ul>
+
+        <h3>NGO / Hospital Module</h3>
+        <p>Certified NGOs and hospitals can:</p>
+        <ul>
+            <li>Register with certification or license details for verification.</li>
+            <li>View and accept incoming medicine donation requests.</li>
+            <li>Schedule and confirm medicine pickups from patients.</li>
+            <li>Track received medicines and distribution analytics.</li>
+            <li>Communicate feedback to donating patients.</li>
+        </ul>
+
+        <h3>Admin Module</h3>
+        <p>The Admin module provides platform-wide oversight:</p>
+        <ul>
+            <li>Manage all registered users (patients, NGOs, hospitals).</li>
+            <li>View analytics dashboards for usage and donation trends.</li>
+            <li>Configure system-wide notifications and settings.</li>
+            <li>Verify NGO and hospital registrations.</li>
+            <li>Manage cloud sync and data security settings.</li>
+        </ul>
+
+        <h2>2.5 Feasibility Study</h2>
+        <h3>2.5.1 Technical Feasibility</h3>
+        <p>The technology stack (React 18, TypeScript, Node.js, MongoDB, Firebase, Dexie.js, Tesseract.js) is mature,
+            well-documented, and widely adopted. All components are open-source or have free tiers, making the system
+            technically viable.</p>
+
+        <h3>2.5.2 Operational Feasibility</h3>
+        <p>The UI is designed for users with minimal technical knowledge, including an Elderly-Friendly Mode. Training
+            requirements are minimal due to intuitive workflows and contextual tooltips.</p>
+
+        <h3>2.5.3 Economic Feasibility</h3>
+        <p>Development uses free and open-source tools. Firebase, MongoDB Atlas, and Vercel (hosting) each provide
+            generous free tiers for the expected traffic of a community-scale deployment. Incremental paid tiers are
+            available as the platform scales.</p>
+
+        <h3>2.5.4 Behavioural Feasibility</h3>
+        <p>The system introduces minimal change to users' existing behaviour — reminders, scanning, and dashboards align
+            with common smartphone usage patterns. The donation feature provides positive social reinforcement,
+            encouraging continued use.</p>
+
+        <h3>2.5.5 Legal Feasibility</h3>
+        <p>The platform complies with GDPR principles: data stays local by default, cloud sync is opt-in, no PII is
+            shared with third parties, and all medical interactions are advisory (not prescriptive). Medicine donations
+            are routed only to verified, government-certified NGOs and hospitals.</p>
+
+        <h3>2.5.6 Schedule Feasibility</h3>
+        <p>The project follows an agile development approach with three two-week sprints covering core features,
+            donation workflow, and AI/reporting features respectively. The total timeline is approximately 8 weeks from
+            inception to deployment.</p>
+    </div>
+
+    <!-- ═══════════════════ CHAPTER 3: REQUIREMENTS ═══════════════════ -->
+    <div class="page">
+        <div class="chapter-label">Chapter 3</div>
+        <h1>System Requirement Specification</h1>
+
+        <h2>3.1 Software Specification</h2>
+        <table>
+            <tr>
+                <th>Component</th>
+                <th>Technology / Version</th>
+                <th>Role</th>
+            </tr>
+            <tr>
+                <td>Frontend Framework</td>
+                <td>React 18.2.0</td>
+                <td>UI rendering</td>
+            </tr>
+            <tr>
+                <td>Language</td>
+                <td>TypeScript 5.3.3</td>
+                <td>Type-safe JavaScript</td>
+            </tr>
+            <tr>
+                <td>Build Tool</td>
+                <td>Vite 5.x</td>
+                <td>Fast bundling and dev server</td>
+            </tr>
+            <tr>
+                <td>Styling</td>
+                <td>TailwindCSS 3.x</td>
+                <td>Utility-first CSS</td>
+            </tr>
+            <tr>
+                <td>Routing</td>
+                <td>React Router v6</td>
+                <td>Client-side navigation</td>
+            </tr>
+            <tr>
+                <td>State Management</td>
+                <td>Zustand</td>
+                <td>Global state store</td>
+            </tr>
+            <tr>
+                <td>Local Database</td>
+                <td>Dexie.js (IndexedDB)</td>
+                <td>Offline-first storage</td>
+            </tr>
+            <tr>
+                <td>Cloud Database</td>
+                <td>Firebase Firestore</td>
+                <td>Cloud sync</td>
+            </tr>
+            <tr>
+                <td>Authentication</td>
+                <td>Firebase Auth</td>
+                <td>Secure user auth</td>
+            </tr>
+            <tr>
+                <td>File Storage</td>
+                <td>Firebase Storage</td>
+                <td>Image storage</td>
+            </tr>
+            <tr>
+                <td>OCR Engine</td>
+                <td>Tesseract.js 5.x</td>
+                <td>Medicine strip scanning</td>
+            </tr>
+            <tr>
+                <td>AI API</td>
+                <td>Google Gemini API</td>
+                <td>Health assistant</td>
+            </tr>
+            <tr>
+                <td>Animations</td>
+                <td>Framer Motion</td>
+                <td>UI micro-animations</td>
+            </tr>
+            <tr>
+                <td>Charts</td>
+                <td>Chart.js / Recharts</td>
+                <td>Analytics visualisation</td>
+            </tr>
+            <tr>
+                <td>PDF Export</td>
+                <td>jsPDF</td>
+                <td>Report generation</td>
+            </tr>
+            <tr>
+                <td>Excel Export</td>
+                <td>SheetJS (xlsx)</td>
+                <td>Spreadsheet export</td>
+            </tr>
+            <tr>
+                <td>Encryption</td>
+                <td>crypto-js (AES)</td>
+                <td>Data protection</td>
+            </tr>
+            <tr>
+                <td>Backend Runtime</td>
+                <td>Node.js 18+ / Express.js</td>
+                <td>REST API server</td>
+            </tr>
+            <tr>
+                <td>Backend Database</td>
+                <td>MongoDB Atlas</td>
+                <td>Server-side data</td>
+            </tr>
+            <tr>
+                <td>Backend ODM</td>
+                <td>Mongoose</td>
+                <td>MongoDB schema management</td>
+            </tr>
+            <tr>
+                <td>Notifications</td>
+                <td>Web Push API</td>
+                <td>Browser push alerts</td>
+            </tr>
+            <tr>
+                <td>Date Utilities</td>
+                <td>date-fns</td>
+                <td>Date formatting / diff</td>
+            </tr>
+        </table>
+
+        <h2>3.2 Hardware Specification</h2>
+        <h3>Client (End-User Device)</h3>
+        <table>
+            <tr>
+                <th>Specification</th>
+                <th>Minimum</th>
+                <th>Recommended</th>
+            </tr>
+            <tr>
+                <td>Processor</td>
+                <td>Dual-core 1.5 GHz</td>
+                <td>Quad-core 2.0 GHz+</td>
+            </tr>
+            <tr>
+                <td>RAM</td>
+                <td>2 GB</td>
+                <td>4 GB+</td>
+            </tr>
+            <tr>
+                <td>Storage</td>
+                <td>50 MB free</td>
+                <td>200 MB+ free</td>
+            </tr>
+            <tr>
+                <td>Network</td>
+                <td>Offline supported</td>
+                <td>4G / Wi-Fi for sync &amp; AI</td>
+            </tr>
+            <tr>
+                <td>Camera</td>
+                <td>Optional (for OCR)</td>
+                <td>5 MP+</td>
+            </tr>
+            <tr>
+                <td>Browser</td>
+                <td>Chrome 90 / Firefox 88</td>
+                <td>Latest stable version</td>
+            </tr>
+        </table>
+
+        <h3>Server (Deployment)</h3>
+        <table>
+            <tr>
+                <th>Specification</th>
+                <th>Value</th>
+            </tr>
+            <tr>
+                <td>Platform</td>
+                <td>Vercel (frontend) / Railway or Render (backend)</td>
+            </tr>
+            <tr>
+                <td>Node.js</td>
+                <td>18 LTS+</td>
+            </tr>
+            <tr>
+                <td>Database</td>
+                <td>MongoDB Atlas M0 (free) to M10 (production)</td>
+            </tr>
+            <tr>
+                <td>Storage</td>
+                <td>Firebase Storage (5 GB free tier)</td>
+            </tr>
+        </table>
+
+        <h2>3.3 Software Tools Used</h2>
+        <table>
+            <tr>
+                <th>Tool</th>
+                <th>Purpose</th>
+            </tr>
+            <tr>
+                <td>Visual Studio Code</td>
+                <td>Primary code editor with TypeScript IntelliSense</td>
+            </tr>
+            <tr>
+                <td>Git &amp; GitHub</td>
+                <td>Version control and code hosting</td>
+            </tr>
+            <tr>
+                <td>npm</td>
+                <td>Package manager</td>
+            </tr>
+            <tr>
+                <td>Vite Dev Server</td>
+                <td>Hot-reload development server</td>
+            </tr>
+            <tr>
+                <td>Postman</td>
+                <td>API testing and documentation</td>
+            </tr>
+            <tr>
+                <td>MongoDB Compass</td>
+                <td>Database inspection and query testing</td>
+            </tr>
+            <tr>
+                <td>Firebase Console</td>
+                <td>Auth, Firestore, and Storage management</td>
+            </tr>
+            <tr>
+                <td>Figma</td>
+                <td>UI/UX mockup and design prototyping</td>
+            </tr>
+            <tr>
+                <td>Chrome DevTools</td>
+                <td>Debugging, performance profiling</td>
+            </tr>
+            <tr>
+                <td>Vercel CLI</td>
+                <td>Deployment and preview environments</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- CHAPTER 4: SYSTEM DESIGN -->
+    <div class="page">
+        <div class="chapter-label">Chapter 4</div>
+        <h1>System Design</h1>
+        <h2>4.1 Data Flow Diagram</h2>
+        <h3>Level 0 DFD</h3>
+        <p>Mediloop is depicted as a single central process receiving inputs from and sending outputs to three external
+            entities.</p>
+        <table>
+            <tr>
+                <th>External Entity</th>
+                <th>Input to System</th>
+                <th>Output from System</th>
+            </tr>
+            <tr>
+                <td>Patient</td>
+                <td>Medicine data, OCR image, donation request</td>
+                <td>Reminders, expiry alerts, AI suggestions, reports</td>
+            </tr>
+            <tr>
+                <td>NGO / Hospital</td>
+                <td>Registration, pickup confirmation</td>
+                <td>Donation requests, analytics</td>
+            </tr>
+            <tr>
+                <td>Admin</td>
+                <td>Config settings, user management actions</td>
+                <td>Analytics reports, audit logs</td>
+            </tr>
+        </table>
+        <p><em>See <strong>level0_dfd.html</strong> for the interactive diagram.</em></p>
+        <h3>Level 1 DFD — Sub-Processes</h3>
+        <ul>
+            <li><strong>P1</strong> – User Authentication (Firebase Auth)</li>
+            <li><strong>P2</strong> – Medicine Management (CRUD, IndexedDB)</li>
+            <li><strong>P3</strong> – Schedule &amp; Reminders (Web Push API)</li>
+            <li><strong>P4</strong> – OCR Processing (Tesseract.js)</li>
+            <li><strong>P5</strong> – Donation Workflow (NGO/Hospital matching)</li>
+            <li><strong>P6</strong> – AI Assistant (Gemini API)</li>
+            <li><strong>P7</strong> – Reports &amp; Analytics (jsPDF / SheetJS)</li>
+        </ul>
+        <p><em>See <strong>level1_dfd.html</strong> for the interactive diagram.</em></p>
+        <h2>4.2 Entity Relationship Diagram</h2>
+        <table>
+            <tr>
+                <th>Entity</th>
+                <th>Key Attributes</th>
+                <th>Relationships</th>
+            </tr>
+            <tr>
+                <td>User</td>
+                <td>id, email, name, role, createdAt</td>
+                <td>Has many Medicines, Schedules, Donations</td>
+            </tr>
+            <tr>
+                <td>Medicine</td>
+                <td>id, userId, name, category, quantity, expiryDate</td>
+                <td>Belongs to User; has many Schedules</td>
+            </tr>
+            <tr>
+                <td>MedicineSchedule</td>
+                <td>id, medicineId, times[], startDate, endDate</td>
+                <td>Belongs to Medicine</td>
+            </tr>
+            <tr>
+                <td>Donation</td>
+                <td>id, userId, ngoId, status, medicines[]</td>
+                <td>Links User to NGO/Hospital</td>
+            </tr>
+            <tr>
+                <td>NGO / Hospital</td>
+                <td>id, name, certificationNumber, verified</td>
+                <td>Receives many Donations</td>
+            </tr>
+            <tr>
+                <td>Notification</td>
+                <td>id, userId, type, message, read</td>
+                <td>Belongs to User</td>
+            </tr>
+        </table>
+        <p><em>See <strong>er_diagram.html</strong> for the interactive Chen-notation diagram.</em></p>
+        <h2>4.3 Sequence Diagram</h2>
+        <p>Key interaction flows: <strong>User Login → Add Medicine (OCR) → Set Schedule → Reminder fired → Donation
+                Request → AI Query</strong>. Participants: Patient, Frontend, Backend API, IndexedDB/MongoDB, Firebase
+            Auth, Gemini API.</p>
+        <p><em>See <strong>sequence_diagram.html</strong> for the interactive diagram.</em></p>
+        <h2>4.4 Use Case Diagram</h2>
+        <table>
+            <tr>
+                <th>Actor</th>
+                <th>Use Cases</th>
+            </tr>
+            <tr>
+                <td>Patient</td>
+                <td>Register, Add Medicine, OCR Scan, Set Schedule, View Reminders, Donate Medicine, Generate Report,
+                    Use AI Assistant</td>
+            </tr>
+            <tr>
+                <td>NGO / Hospital</td>
+                <td>Register, View Donations, Accept/Reject, Schedule Pickup, View Analytics</td>
+            </tr>
+            <tr>
+                <td>Admin</td>
+                <td>Manage Users, Verify NGO, View Analytics, Configure Settings</td>
+            </tr>
+        </table>
+        <p><em>See <strong>usecase_diagram.html</strong> for the interactive diagram.</em></p>
+    </div>
+
+    <div class="page">
+        <h2>4.5 Database Design</h2>
+        <p>Mediloop uses a <strong>dual-database strategy</strong>: IndexedDB (Dexie.js) for offline-first client
+            storage, Firebase Firestore for optional cloud sync, and MongoDB Atlas for server-side NGO/donation data.
+        </p>
+        <h2>4.6 Table Design</h2>
+        <h3>Users</h3>
+        <table>
+            <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>id</td>
+                <td>UUID</td>
+                <td>Unique identifier</td>
+            </tr>
+            <tr>
+                <td>email</td>
+                <td>String</td>
+                <td>Login email (unique)</td>
+            </tr>
+            <tr>
+                <td>role</td>
+                <td>Enum</td>
+                <td>patient | ngo | hospital | admin</td>
+            </tr>
+            <tr>
+                <td>elderlyMode</td>
+                <td>Boolean</td>
+                <td>Accessibility toggle</td>
+            </tr>
+            <tr>
+                <td>createdAt</td>
+                <td>Date</td>
+                <td>Registration timestamp</td>
+            </tr>
+        </table>
+        <h3>Medicines</h3>
+        <table>
+            <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>id</td>
+                <td>UUID</td>
+                <td>Medicine identifier</td>
+            </tr>
+            <tr>
+                <td>userId</td>
+                <td>String</td>
+                <td>Owner reference</td>
+            </tr>
+            <tr>
+                <td>name</td>
+                <td>String</td>
+                <td>Medicine name</td>
+            </tr>
+            <tr>
+                <td>category</td>
+                <td>String</td>
+                <td>painkiller / antibiotic / vitamin…</td>
+            </tr>
+            <tr>
+                <td>quantity</td>
+                <td>Number</td>
+                <td>Current stock count</td>
+            </tr>
+            <tr>
+                <td>expiryDate</td>
+                <td>Date</td>
+                <td>Used for color-coding</td>
+            </tr>
+        </table>
+        <h3>Donations</h3>
+        <table>
+            <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>id</td>
+                <td>String</td>
+                <td>Donation record ID</td>
+            </tr>
+            <tr>
+                <td>userId</td>
+                <td>String</td>
+                <td>Donating patient</td>
+            </tr>
+            <tr>
+                <td>ngoId / hospitalId</td>
+                <td>String</td>
+                <td>Receiving organisation</td>
+            </tr>
+            <tr>
+                <td>medicines</td>
+                <td>Array</td>
+                <td>Donated medicine objects</td>
+            </tr>
+            <tr>
+                <td>status</td>
+                <td>Enum</td>
+                <td>pending | accepted | picked_up | completed</td>
+            </tr>
+            <tr>
+                <td>pickupDate</td>
+                <td>Date</td>
+                <td>Confirmed pickup timestamp</td>
+            </tr>
+        </table>
+        <h3>MedicineSchedules</h3>
+        <table>
+            <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>id</td>
+                <td>UUID</td>
+                <td>Schedule identifier</td>
+            </tr>
+            <tr>
+                <td>medicineId</td>
+                <td>String</td>
+                <td>Reference to the medicine</td>
+            </tr>
+            <tr>
+                <td>userId</td>
+                <td>String</td>
+                <td>Owner patient reference</td>
+            </tr>
+            <tr>
+                <td>times</td>
+                <td>Array&lt;string&gt;</td>
+                <td>Dose times e.g. ["08:00","20:00"]</td>
+            </tr>
+            <tr>
+                <td>startDate</td>
+                <td>Date</td>
+                <td>Schedule start date</td>
+            </tr>
+            <tr>
+                <td>endDate</td>
+                <td>Date</td>
+                <td>Schedule end date</td>
+            </tr>
+        </table>
+        <h3>NGOs</h3>
+        <table>
+            <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>id</td>
+                <td>UUID</td>
+                <td>NGO identifier</td>
+            </tr>
+            <tr>
+                <td>name</td>
+                <td>String</td>
+                <td>Organisation name</td>
+            </tr>
+            <tr>
+                <td>email</td>
+                <td>String</td>
+                <td>Contact email</td>
+            </tr>
+            <tr>
+                <td>phone</td>
+                <td>String</td>
+                <td>Contact phone number</td>
+            </tr>
+            <tr>
+                <td>address</td>
+                <td>String</td>
+                <td>Physical address</td>
+            </tr>
+            <tr>
+                <td>certificationNumber</td>
+                <td>String</td>
+                <td>Government certification ID</td>
+            </tr>
+            <tr>
+                <td>acceptedCategories</td>
+                <td>Array&lt;string&gt;</td>
+                <td>Medicine types accepted</td>
+            </tr>
+            <tr>
+                <td>operatingHours</td>
+                <td>String</td>
+                <td>e.g. "9:00 AM – 6:00 PM"</td>
+            </tr>
+            <tr>
+                <td>verified</td>
+                <td>Boolean</td>
+                <td>Admin-verified status</td>
+            </tr>
+            <tr>
+                <td>createdAt</td>
+                <td>Date</td>
+                <td>Registration timestamp</td>
+            </tr>
+        </table>
+        <h3>Hospitals</h3>
+        <table>
+            <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>id</td>
+                <td>UUID</td>
+                <td>Hospital identifier</td>
+            </tr>
+            <tr>
+                <td>name</td>
+                <td>String</td>
+                <td>Hospital name</td>
+            </tr>
+            <tr>
+                <td>email</td>
+                <td>String</td>
+                <td>Contact email</td>
+            </tr>
+            <tr>
+                <td>phone</td>
+                <td>String</td>
+                <td>Contact phone number</td>
+            </tr>
+            <tr>
+                <td>address</td>
+                <td>String</td>
+                <td>Physical address</td>
+            </tr>
+            <tr>
+                <td>licenseNumber</td>
+                <td>String</td>
+                <td>Medical license ID</td>
+            </tr>
+            <tr>
+                <td>departments</td>
+                <td>Array&lt;string&gt;</td>
+                <td>e.g. ["Emergency","Cardiology"]</td>
+            </tr>
+            <tr>
+                <td>operatingHours</td>
+                <td>String</td>
+                <td>e.g. "24/7"</td>
+            </tr>
+            <tr>
+                <td>verified</td>
+                <td>Boolean</td>
+                <td>Admin-verified status</td>
+            </tr>
+            <tr>
+                <td>createdAt</td>
+                <td>Date</td>
+                <td>Registration timestamp</td>
+            </tr>
+        </table>
+        <h3>Notifications</h3>
+        <table>
+            <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>id</td>
+                <td>UUID</td>
+                <td>Notification identifier</td>
+            </tr>
+            <tr>
+                <td>userId</td>
+                <td>String</td>
+                <td>Recipient user reference</td>
+            </tr>
+            <tr>
+                <td>type</td>
+                <td>Enum</td>
+                <td>reminder | refill | donation | system</td>
+            </tr>
+            <tr>
+                <td>message</td>
+                <td>String</td>
+                <td>Notification body text</td>
+            </tr>
+            <tr>
+                <td>read</td>
+                <td>Boolean</td>
+                <td>Whether user has read it</td>
+            </tr>
+            <tr>
+                <td>createdAt</td>
+                <td>Date</td>
+                <td>Creation timestamp</td>
+            </tr>
+        </table>
+        <h3>AnalyticsData</h3>
+        <table>
+            <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>id</td>
+                <td>UUID</td>
+                <td>Analytics record identifier</td>
+            </tr>
+            <tr>
+                <td>userId</td>
+                <td>String</td>
+                <td>Patient reference</td>
+            </tr>
+            <tr>
+                <td>period</td>
+                <td>String</td>
+                <td>daily | weekly | monthly</td>
+            </tr>
+            <tr>
+                <td>adherenceRate</td>
+                <td>Number</td>
+                <td>% of doses taken on time</td>
+            </tr>
+            <tr>
+                <td>dosesTaken</td>
+                <td>Number</td>
+                <td>Count of doses taken</td>
+            </tr>
+            <tr>
+                <td>dosesMissed</td>
+                <td>Number</td>
+                <td>Count of missed doses</td>
+            </tr>
+            <tr>
+                <td>date</td>
+                <td>Date</td>
+                <td>Period reference date</td>
+            </tr>
+        </table>
+        <h3>HealthRecords</h3>
+        <table>
+            <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>id</td>
+                <td>UUID</td>
+                <td>Record identifier</td>
+            </tr>
+            <tr>
+                <td>userId</td>
+                <td>String</td>
+                <td>Patient reference</td>
+            </tr>
+            <tr>
+                <td>type</td>
+                <td>String</td>
+                <td>e.g. blood_pressure, weight, glucose</td>
+            </tr>
+            <tr>
+                <td>value</td>
+                <td>String / Number</td>
+                <td>Recorded measurement value</td>
+            </tr>
+            <tr>
+                <td>unit</td>
+                <td>String</td>
+                <td>Measurement unit (mmHg, kg, mg/dL)</td>
+            </tr>
+            <tr>
+                <td>date</td>
+                <td>Date</td>
+                <td>Date of measurement</td>
+            </tr>
+            <tr>
+                <td>createdAt</td>
+                <td>Date</td>
+                <td>Record creation timestamp</td>
+            </tr>
+        </table>
+        <h2>4.7 User Interface Design</h2>
+        <ul>
+            <li><strong>Color System:</strong> Primary blue #2563EB, success green, warning amber, danger red.</li>
+            <li><strong>Typography:</strong> Inter / system-ui; 14pt base, 18pt+ in Elderly Mode.</li>
+            <li><strong>Layout:</strong> Sidebar nav on desktop; bottom tab bar on mobile (responsive).</li>
+            <li><strong>Cards:</strong> White rounded shadow cards for all content groups.</li>
+            <li><strong>Animations:</strong> Framer Motion fade/slide on page changes and modals.</li>
+        </ul>
+        <h2>4.8 Input Design</h2>
+        <ul>
+            <li><strong>Manual Form:</strong> Validated fields for name, dosage, quantity, expiry, category.</li>
+            <li><strong>OCR Scan:</strong> Camera/file upload → Tesseract.js → auto-filled form fields.</li>
+            <li><strong>Voice Input:</strong> Web Speech API converts spoken medicine names to text.</li>
+            <li><strong>Date Picker:</strong> Native date inputs with cross-browser support.</li>
+        </ul>
+        <h2>4.9 Output Design</h2>
+        <ul>
+            <li><strong>Dashboard:</strong> Real-time medicine count, upcoming doses, expiry warnings, adherence stats.
+            </li>
+            <li><strong>Push Notifications:</strong> Timed browser alerts for doses and low-stock reminders.</li>
+            <li><strong>PDF Reports:</strong> jsPDF-generated medication summary for doctor visits.</li>
+            <li><strong>Excel Export:</strong> SheetJS full medicine inventory spreadsheet.</li>
+            <li><strong>AI Response:</strong> Streamed text from Gemini API in the chat interface.</li>
+            <li><strong>Donation Status:</strong> Real-time badge: Pending / Accepted / Picked Up / Completed.</li>
+        </ul>
+    </div>
+
+    <!-- CHAPTER 5: SYSTEM DEVELOPMENT -->
+    <div class="page">
+        <div class="chapter-label">Chapter 5</div>
+        <h1>System Development</h1>
+        <h2>5.1 Coding Environment</h2>
+        <table>
+            <tr>
+                <th>Tool</th>
+                <th>Detail</th>
+            </tr>
+            <tr>
+                <td>Editor</td>
+                <td>Visual Studio Code 1.87+</td>
+            </tr>
+            <tr>
+                <td>Extensions</td>
+                <td>ESLint, Prettier, Tailwind IntelliSense, TypeScript Hero</td>
+            </tr>
+            <tr>
+                <td>Node.js</td>
+                <td>18.x LTS</td>
+            </tr>
+            <tr>
+                <td>Package Manager</td>
+                <td>npm 9.x</td>
+            </tr>
+            <tr>
+                <td>Version Control</td>
+                <td>Git 2.x with GitHub</td>
+            </tr>
+        </table>
+        <h2>5.2 Development Approach</h2>
+        <p>Agile / iterative methodology with four two-week sprints:</p>
+        <table>
+            <tr>
+                <th>Sprint</th>
+                <th>Focus</th>
+            </tr>
+            <tr>
+                <td>Sprint 1</td>
+                <td>Authentication, medicine CRUD, IndexedDB, basic dashboard</td>
+            </tr>
+            <tr>
+                <td>Sprint 2</td>
+                <td>OCR integration, scheduling, push notifications, donation workflow</td>
+            </tr>
+            <tr>
+                <td>Sprint 3</td>
+                <td>AI assistant, PDF/Excel export, NGO/Hospital module, admin panel</td>
+            </tr>
+            <tr>
+                <td>Sprint 4</td>
+                <td>Elderly mode, cloud sync, security hardening, testing, deployment</td>
+            </tr>
+        </table>
+        <h2>5.3 Database Servers</h2>
+        <ul>
+            <li><strong>IndexedDB (Dexie.js):</strong> Client-side offline storage with 9 object stores (version 2
+                schema).</li>
+            <li><strong>Firebase Firestore:</strong> Real-time cloud sync; optional for multi-device access.</li>
+            <li><strong>MongoDB Atlas:</strong> Server-side store for NGO profiles, donation records, admin analytics.
+            </li>
+        </ul>
+        <h2>5.4 Programming Languages</h2>
+        <table>
+            <tr>
+                <th>Language</th>
+                <th>Usage</th>
+            </tr>
+            <tr>
+                <td>TypeScript (TSX)</td>
+                <td>Frontend React components, stores, services, types</td>
+            </tr>
+            <tr>
+                <td>JavaScript (JS)</td>
+                <td>Backend Node.js/Express routes, models, server</td>
+            </tr>
+            <tr>
+                <td>TailwindCSS</td>
+                <td>All UI styling via utility classes</td>
+            </tr>
+            <tr>
+                <td>HTML5</td>
+                <td>Base structure; diagram files (DFD, ER, Sequence, Use Case)</td>
+            </tr>
+            <tr>
+                <td>JSON</td>
+                <td>Config files (package.json, tsconfig.json, vercel.json)</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- CHAPTER 6: SYSTEM TESTING -->
+    <div class="page">
+        <div class="chapter-label">Chapter 6</div>
+        <h1>System Testing</h1>
+        <h2>6.1 White-Box Testing</h2>
+        <p>Internal logic was tested with branch-coverage analysis on the expiry color-coding algorithm, donation status
+            state machine, and OCR text parsing utility.</p>
+        <h2>6.2 Black-Box Testing</h2>
+        <p>All REST API endpoints were tested without knowledge of internal implementation, verifying HTTP status codes,
+            response schemas, and error messages for: POST /auth/register, GET/POST/PUT/DELETE /medicines, POST
+            /donations.</p>
+        <h2>6.3 Condition Testing</h2>
+        <p>Boolean conditions tested: user role checks (patient vs admin), medicine expiry comparisons (&lt;30 / 30–90 /
+            &gt;90 days), and donation eligibility (quantity &gt; 0 and not expired).</p>
+        <h2>6.4 Loop Testing</h2>
+        <p>Iterative routines verified: bulk NGO seeding loop, medicine list rendering with 0 / 1 / many items, and
+            notification scheduling loop for each dose time.</p>
+        <h2>6.5 Unit Testing</h2>
+        <table>
+            <tr>
+                <th>Function</th>
+                <th>Test Cases</th>
+                <th>Status</th>
+            </tr>
+            <tr>
+                <td>getExpiryStatus(date)</td>
+                <td>Expired, &lt;30d, 30–90d, &gt;90d</td>
+                <td>✅ Pass</td>
+            </tr>
+            <tr>
+                <td>calculateAdherence(logs)</td>
+                <td>0%, 50%, 100% taken</td>
+                <td>✅ Pass</td>
+            </tr>
+            <tr>
+                <td>parseOCRText(raw)</td>
+                <td>Valid strip, blurry text, empty</td>
+                <td>✅ Pass</td>
+            </tr>
+            <tr>
+                <td>encryptData(payload)</td>
+                <td>String, object, empty</td>
+                <td>✅ Pass</td>
+            </tr>
+        </table>
+        <h2>6.6 Integration Testing</h2>
+        <ul>
+            <li>Frontend form → IndexedDB write → UI re-render with new data.</li>
+            <li>Donation form → Backend API → MongoDB → NGO dashboard update.</li>
+            <li>Auth token → Route guard → Correct role dashboard loaded.</li>
+        </ul>
+        <h2>6.7 Output Testing</h2>
+        <ul>
+            <li><strong>PDF Report:</strong> All medicine fields, patient name, and date render correctly across
+                browsers.</li>
+            <li><strong>Excel Export:</strong> All columns export with correct data types.</li>
+            <li><strong>Notification:</strong> Push notification appears at the correct scheduled time.</li>
+        </ul>
+        <h2>6.8 User Acceptance Testing</h2>
+        <table>
+            <tr>
+                <th>User Group</th>
+                <th>Feedback</th>
+                <th>Resolution</th>
+            </tr>
+            <tr>
+                <td>General patients</td>
+                <td>OCR missed expiry dates in poor lighting</td>
+                <td>Manual override prompt added after scan</td>
+            </tr>
+            <tr>
+                <td>Elderly patients</td>
+                <td>Buttons too small on mobile</td>
+                <td>Elderly Mode enabled by default with large touch targets</td>
+            </tr>
+            <tr>
+                <td>NGO reps</td>
+                <td>Needed bulk donation acceptance</td>
+                <td>Multi-select checkbox added to NGO donation list</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- CHAPTER 7: SYSTEM IMPLEMENTATION -->
+    <div class="page">
+        <div class="chapter-label">Chapter 7</div>
+        <h1>System Implementation</h1>
+        <h2>7.1 Implementation Plan</h2>
+        <table>
+            <tr>
+                <th>Phase</th>
+                <th>Activity</th>
+                <th>Timeline</th>
+            </tr>
+            <tr>
+                <td>Phase 1</td>
+                <td>Vercel project setup, frontend build deployed</td>
+                <td>Day 1</td>
+            </tr>
+            <tr>
+                <td>Phase 2</td>
+                <td>MongoDB Atlas cluster, Node.js backend deployed</td>
+                <td>Day 2</td>
+            </tr>
+            <tr>
+                <td>Phase 3</td>
+                <td>Firebase Auth + Firestore configured</td>
+                <td>Day 3</td>
+            </tr>
+            <tr>
+                <td>Phase 4</td>
+                <td>Initial NGO data seeded, end-to-end flows verified</td>
+                <td>Day 4</td>
+            </tr>
+            <tr>
+                <td>Phase 5</td>
+                <td>User onboarding and go-live</td>
+                <td>Day 5</td>
+            </tr>
+        </table>
+        <h2>7.2 Education and Training</h2>
+        <p>A user guide was prepared covering all three roles. Training was delivered via screencast video walkthrough
+            and an in-app contextual help system (tooltip overlays on first login).</p>
+        <h2>7.3 Training of the Application Software</h2>
+        <p>The Gemini AI assistant was configured with a focused system prompt restricting responses to medicine-related
+            health advice. Tesseract.js was pre-configured with the English language pack optimised for printed pharmacy
+            text.</p>
+        <h2>7.4 Post-Implementation Review</h2>
+        <p>One week after go-live: all three role flows verified in production; notifications confirmed on Chrome,
+            Firefox, and Edge. One bug fixed — IndexedDB version conflict on Safari resolved by incrementing the DB
+            version guard.</p>
+        <h2>7.5 Security</h2>
+        <ul>
+            <li><strong>Authentication:</strong> Firebase Auth with JWT tokens; sessions expire after inactivity.</li>
+            <li><strong>Encryption:</strong> AES via crypto-js applied to sensitive local storage entries.</li>
+            <li><strong>HTTPS:</strong> Enforced on all production routes (Vercel provides automatic TLS).</li>
+            <li><strong>Role-Based Access:</strong> Route guards prevent cross-role page access.</li>
+            <li><strong>CORS:</strong> Backend restricts origins to the deployed frontend domain only.</li>
+        </ul>
+        <h2>7.6 Maintenance</h2>
+        <ul>
+            <li>Automated dependency updates via Dependabot (GitHub).</li>
+            <li>Monthly review of Firebase and MongoDB Atlas quota usage.</li>
+            <li>Gemini API key rotation every 90 days.</li>
+            <li>Monitoring via Vercel Analytics and MongoDB Atlas Performance Advisor.</li>
+        </ul>
+    </div>
+
+    <!-- CHAPTER 8: FUTURE ENHANCEMENT -->
+    <div class="page">
+        <div class="chapter-label">Chapter 8</div>
+        <h1>Future Enhancement</h1>
+        <table>
+            <tr>
+                <th>#</th>
+                <th>Enhancement</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>1</td>
+                <td>Android App (React Native)</td>
+                <td>Companion mobile app with native camera access for improved OCR.</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>Barcode / QR Scanning</td>
+                <td>Auto-fetch medicine details from pharmaceutical database APIs via barcode.</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>Medicine Interaction Checker</td>
+                <td>AI detection of dangerous drug combinations from the active medicine list.</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>Pharmacy API Integration</td>
+                <td>Real-time refill pricing and availability from pharmacy inventory APIs.</td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td>Multi-Language Support</td>
+                <td>i18n for Hindi, Tamil, Spanish, Arabic to serve a broader user base.</td>
+            </tr>
+            <tr>
+                <td>6</td>
+                <td>Wearable Integration</td>
+                <td>Sync dose reminders with Google Wear OS / Apple Watch.</td>
+            </tr>
+            <tr>
+                <td>7</td>
+                <td>Telemedicine</td>
+                <td>In-app video consultation with automatic sharing of patient medicine list.</td>
+            </tr>
+            <tr>
+                <td>8</td>
+                <td>Prescription OCR</td>
+                <td>Extract full prescription details from a photographed prescription slip.</td>
+            </tr>
+            <tr>
+                <td>9</td>
+                <td>Caregiver Mode</td>
+                <td>Allow a caregiver to manage medicines on behalf of an elderly patient.</td>
+            </tr>
+            <tr>
+                <td>10</td>
+                <td>Gamification</td>
+                <td>Reward points and badges for medication adherence milestones.</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- CHAPTER 9: CONCLUSION -->
+    <div class="page">
+        <div class="chapter-label">Chapter 9</div>
+        <h1>Conclusion</h1>
+        <p>Mediloop successfully addresses a real-world healthcare challenge by combining medicine management and
+            community donation into a single, accessible, and intelligent web platform. By leveraging React 18,
+            TypeScript, Firebase, IndexedDB, and AI, the system delivers a reliable and privacy-respecting experience
+            for patients, NGOs, hospitals, and administrators.</p>
+        <p><strong>Key achievements:</strong></p>
+        <ul>
+            <li>Fully offline-functional medicine tracker with OCR scanning.</li>
+            <li>Verified donation ecosystem connecting patients to certified NGOs and hospitals.</li>
+            <li>AI-powered health assistant providing contextual medicine guidance.</li>
+            <li>Elderly-friendly mode ensuring inclusivity for all age groups.</li>
+            <li>End-to-end data security with AES encryption and Firebase Auth.</li>
+            <li>Progressive Web App architecture enabling near-native mobile experiences.</li>
+        </ul>
+        <p>The system was developed following agile principles, thoroughly tested through white-box, black-box,
+            integration, and user acceptance testing, and successfully deployed to a cloud environment. Mediloop
+            demonstrates that technology can meaningfully reduce medicine wastage, improve medication adherence, and
+            make healthcare resources more accessible to underserved communities.</p>
+        <div class="highlight"><strong>Project Status:</strong> Version 1.0.0 is live and production-ready.</div>
+    </div>
+
+    <!-- CHAPTER 10: APPENDIX A – SOURCE CODE (paged style) -->
+
+    <!-- Page: Appendix A cover -->
+    <div class="page">
+        <div class="chapter-label">Chapter 10</div>
+        <h1>Appendix A: Source Code</h1>
+        <div style="margin-top:2rem;">
+            <h2>10.1 Web</h2>
+            <p>The following pages contain key source-code extracts from the Mediloop web application.
+                All code is written in TypeScript / React 18 and structured under <code>src/</code>.</p>
+            <h2>10.2 Android / PWA</h2>
+            <p>The Android companion app is planned as a future React Native release. Currently, the web
+                app is installable as a <strong>Progressive Web App (PWA)</strong> on Android via Chrome's
+                "Add to Home Screen", delivering push notifications and a full-screen offline-first experience.</p>
+        </div>
+    </div>
+
+    <!-- Page: LOGIN -->
+    <div class="page">
+        <div
+            style="text-align:center;font-weight:bold;font-size:11pt;border-bottom:1px solid #ccc;padding-bottom:4px;margin-bottom:12px;">
+            Source Code &mdash; Mediloop</div>
+        <h2 style="text-align:center;margin-bottom:4px;">10.1 WEB</h2>
+        <h3 style="text-align:center;margin-bottom:8px;">LOGIN</h3>
+        <p style="margin-bottom:6px;"><em>File: <code>src/pages/auth/Login.tsx</code></em></p>
+        <pre style="background:#f1f5f9;padding:10px;font-size:8.5pt;border-radius:4px;line-height:1.5;overflow-x:auto;">
+import { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { LogIn } from 'lucide-react';
+import { UserRole } from '../../types';
+import toast from 'react-hot-toast';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../../config/firebase';
+
+export default function Login() {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    role: 'patient' as 'patient' | 'admin' | 'ngo' | 'hospital',
+  });
+
+  const handleSubmit = async (e: React.FormEvent) =&gt; {
+    e.preventDefault();
+    try {
+      await signInWithEmailAndPassword(auth, formData.email, formData.password);
+      toast.success('Login successful!');
+      navigate('/dashboard');
+    } catch (error: any) {
+      let errorMessage = 'Login failed. Please try again.';
+      if (error.code === 'auth/invalid-credential')
+        errorMessage = 'Invalid email or password. Please Sign Up first.';
+      else if (error.code === 'auth/user-not-found')
+        errorMessage = 'User not found. Please register.';
+      toast.error(errorMessage);
+    }
+  };
+
+  return (
+    &lt;div className="card"&gt;
+      &lt;h2 className="text-2xl font-bold text-center mb-6"&gt;Sign In&lt;/h2&gt;
+      &lt;form onSubmit={handleSubmit} className="space-y-4"&gt;
+        &lt;div&gt;
+          &lt;label className="block text-sm font-medium mb-2"&gt;Email&lt;/label&gt;
+          &lt;input type="email" required className="input"
+            value={formData.email}
+            onChange={(e) =&gt; setFormData({ ...formData, email: e.target.value })}
+            placeholder="you@example.com" /&gt;
+        &lt;/div&gt;
+        &lt;div&gt;
+          &lt;label className="block text-sm font-medium mb-2"&gt;Password&lt;/label&gt;
+          &lt;input type="password" required className="input"
+            value={formData.password}
+            onChange={(e) =&gt; setFormData({ ...formData, password: e.target.value })}
+            placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" /&gt;
+        &lt;/div&gt;
+        &lt;div&gt;
+          &lt;label className="block text-sm font-medium mb-2"&gt;Role&lt;/label&gt;
+          &lt;select className="input" value={formData.role}
+            onChange={(e) =&gt; setFormData({ ...formData, role: e.target.value as UserRole })}&gt;
+            &lt;option value="patient"&gt;Patient&lt;/option&gt;
+            &lt;option value="ngo"&gt;NGO / Hospital&lt;/option&gt;
+          &lt;/select&gt;
+        &lt;/div&gt;
+        &lt;button type="submit" className="btn btn-primary w-full"&gt;
+          &lt;LogIn size={18} /&gt;
+          &lt;span&gt;Sign In&lt;/span&gt;
+        &lt;/button&gt;
+      &lt;/form&gt;
+      &lt;p className="text-center mt-4 text-sm text-gray-600"&gt;
+        Don't have an account?{' '}
+        &lt;Link to="/register" className="text-primary-600 font-medium"&gt;Sign Up&lt;/Link&gt;
+      &lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+        </pre>
+    </div>
+
+    <!-- Page: REGISTER -->
+    <div class="page">
+        <div
+            style="text-align:center;font-weight:bold;font-size:11pt;border-bottom:1px solid #ccc;padding-bottom:4px;margin-bottom:12px;">
+            Source Code &mdash; Mediloop</div>
+        <h3 style="text-align:center;margin-bottom:8px;">REGISTER</h3>
+        <p style="margin-bottom:6px;"><em>File: <code>src/pages/auth/Register.tsx</code></em></p>
+        <pre style="background:#f1f5f9;padding:10px;font-size:8.5pt;border-radius:4px;line-height:1.5;overflow-x:auto;">
+import { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { UserPlus } from 'lucide-react';
+import { db } from '../../db';
+import toast from 'react-hot-toast';
+import { generateId } from '../../utils/helpers';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../../config/firebase';
+
+export default function Register() {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    name: '', email: '', password: '', confirmPassword: '',
+    role: 'patient' as 'patient' | 'admin' | 'ngo' | 'hospital',
+  });
+
+  const handleSubmit = async (e: React.FormEvent) =&gt; {
+    e.preventDefault();
+    if (formData.password !== formData.confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
+    try {
+      const existing = await db.users.where('email').equals(formData.email).first();
+      if (existing) { toast.error('Email already registered'); return; }
+
+      // Create user in Firebase Authentication
+      await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+
+      // Mirror user in local IndexedDB
+      const newUser = {
+        id: generateId('user-'),
+        email: formData.email,
+        name: formData.name,
+        role: formData.role,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        preferences: {
+          theme: 'light' as const,
+          elderlyMode: false,
+          notificationsEnabled: true,
+          voiceEnabled: false,
+          language: 'en',
+        },
+      };
+      await db.users.add(newUser);
+      toast.success('Account created successfully!');
+      navigate('/dashboard');
+    } catch (error: any) {
+      let msg = 'Registration failed. Please try again.';
+      if (error.code === 'auth/email-already-in-use') msg = 'Email already in use';
+      if (error.code === 'auth/weak-password')        msg = 'Password too short (min 6 chars)';
+      toast.error(msg);
+    }
+  };
+
+  return (
+    &lt;div className="card"&gt;
+      &lt;h2 className="text-2xl font-bold text-center mb-6"&gt;Create Account&lt;/h2&gt;
+      &lt;form onSubmit={handleSubmit} className="space-y-4"&gt;
+        &lt;input type="text" required className="input" placeholder="Full Name"
+          onChange={(e) =&gt; setFormData({ ...formData, name: e.target.value })} /&gt;
+        &lt;input type="email" required className="input" placeholder="Email"
+          onChange={(e) =&gt; setFormData({ ...formData, email: e.target.value })} /&gt;
+        &lt;input type="password" required className="input" placeholder="Password"
+          onChange={(e) =&gt; setFormData({ ...formData, password: e.target.value })} /&gt;
+        &lt;input type="password" required className="input" placeholder="Confirm Password"
+          onChange={(e) =&gt; setFormData({ ...formData, confirmPassword: e.target.value })} /&gt;
+        &lt;select className="input"
+          onChange={(e) =&gt; setFormData({ ...formData, role: e.target.value as any })}&gt;
+          &lt;option value="patient"&gt;Patient&lt;/option&gt;
+          &lt;option value="ngo"&gt;NGO / Hospital&lt;/option&gt;
+        &lt;/select&gt;
+        &lt;button type="submit" className="btn btn-primary w-full"&gt;
+          &lt;UserPlus size={18} /&gt;&lt;span&gt;Create Account&lt;/span&gt;
+        &lt;/button&gt;
+      &lt;/form&gt;
+      &lt;p className="text-center mt-4 text-sm"&gt;
+        Already have an account? &lt;Link to="/login"&gt;Sign In&lt;/Link&gt;
+      &lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+        </pre>
+    </div>
+
+    <!-- Page: ADMIN DASHBOARD -->
+    <div class="page">
+        <div
+            style="text-align:center;font-weight:bold;font-size:11pt;border-bottom:1px solid #ccc;padding-bottom:4px;margin-bottom:12px;">
+            Source Code &mdash; Mediloop</div>
+        <h3 style="text-align:center;margin-bottom:8px;">ADMIN DASHBOARD</h3>
+        <p style="margin-bottom:6px;"><em>File: <code>src/pages/admin/Dashboard.tsx</code></em></p>
+        <pre style="background:#f1f5f9;padding:10px;font-size:8.5pt;border-radius:4px;line-height:1.5;overflow-x:auto;">
+import { useEffect, useState } from 'react';
+import { Users, Pill, Heart, TrendingUp,
+         AlertCircle, CheckCircle, Clock,
+         BarChart3, Settings, Bell, Database, Shield } from 'lucide-react';
+import { db } from '../../db';
+import { User, Medicine, Donation, AppNotification } from '../../types';
+import { formatDate } from '../../utils/helpers';
+
+interface DashboardStats {
+  totalUsers: number; totalMedicines: number; totalDonations: number;
+  pendingDonations: number; completedDonations: number;
+  activeUsers: number; systemHealth: 'good' | 'warning' | 'critical';
+  recentActivity: number;
+}
+
+export default function AdminDashboard() {
+  const [stats, setStats] = useState&lt;DashboardStats&gt;({
+    totalUsers: 0, totalMedicines: 0, totalDonations: 0,
+    pendingDonations: 0, completedDonations: 0,
+    activeUsers: 0, systemHealth: 'good', recentActivity: 0,
+  });
+  const [recentUsers, setRecentUsers] = useState&lt;User[]&gt;([]);
+  const [recentDonations, setRecentDonations] = useState&lt;Donation[]&gt;([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() =&gt; { loadDashboardData(); }, []);
+
+  const loadDashboardData = async () =&gt; {
+    setLoading(true);
+    const users       = await db.users.toArray();
+    const medicines   = await db.medicines.toArray();
+    const donations   = await db.donations.toArray();
+    const notifications = await db.notifications
+                           .where('type').equals('system').toArray();
+
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const activeUsers = users.filter(u =&gt; u.createdAt &gt; sevenDaysAgo).length;
+
+    const pendingDonations   = donations.filter(d =&gt; d.status === 'pending').length;
+    const completedDonations = donations.filter(d =&gt; d.status === 'completed').length;
+
+    let systemHealth: 'good' | 'warning' | 'critical' = 'good';
+    if (pendingDonations &gt; 50)  systemHealth = 'warning';
+    if (pendingDonations &gt; 100 || users.length === 0) systemHealth = 'critical';
+
+    const oneDayAgo = new Date();
+    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+    const recentActivity = notifications.filter(n =&gt; n.createdAt &gt; oneDayAgo).length;
+
+    setStats({ totalUsers: users.length, totalMedicines: medicines.length,
+      totalDonations: donations.length, pendingDonations, completedDonations,
+      activeUsers, systemHealth, recentActivity });
+    setRecentUsers(users
+      .sort((a,b) =&gt; b.createdAt.getTime() - a.createdAt.getTime()).slice(0, 5));
+    setRecentDonations(donations
+      .sort((a,b) =&gt; b.createdAt.getTime() - a.createdAt.getTime()).slice(0, 5));
+    setLoading(false);
+  };
+
+  // Returns JSX: stat cards (Users, Medicines, Donations, System Health),
+  // recent users list, recent donations list, quick-action buttons,
+  // and system notifications panel.
+}
+        </pre>
+    </div>
+
+    <!-- Page: PATIENT DASHBOARD -->
+    <div class="page">
+        <div
+            style="text-align:center;font-weight:bold;font-size:11pt;border-bottom:1px solid #ccc;padding-bottom:4px;margin-bottom:12px;">
+            Source Code &mdash; Mediloop</div>
+        <h3 style="text-align:center;margin-bottom:8px;">PATIENT DASHBOARD</h3>
+        <p style="margin-bottom:6px;"><em>File: <code>src/pages/patient/Dashboard.tsx</code></em></p>
+        <pre style="background:#f1f5f9;padding:10px;font-size:8.5pt;border-radius:4px;line-height:1.5;overflow-x:auto;">
+import { useEffect, useState } from 'react';
+import { Pill, Calendar, Heart, AlertCircle, Plus, Camera } from 'lucide-react';
+import { useAuthStore } from '../../store/useAuthStore';
+import { db } from '../../db';
+import { Medicine, MedicineSchedule } from '../../types';
+import { getDaysUntilExpiry, formatDate } from '../../utils/helpers';
+import { stockMonitoringService } from '../../services/stockMonitoringService';
+
+export default function Dashboard() {
+  const { user } = useAuthStore();
+  const [medicines, setMedicines] = useState&lt;Medicine[]&gt;([]);
+  const [schedules, setSchedules] = useState&lt;MedicineSchedule[]&gt;([]);
+  const [stats, setStats] = useState({
+    total: 0, expiringSoon: 0, todayDoses: 0,
+    adherenceRate: 0, outOfStock: 0, lowStock: 0,
+  });
+
+  useEffect(() =&gt; {
+    if (user) { loadData(); stockMonitoringService.checkAllNotifications(user.id); }
+  }, [user]);
+
+  const loadData = async () =&gt; {
+    if (!user) return;
+    const meds  = await db.medicines.where('userId').equals(user.id).toArray();
+    const scheds = await db.schedules.where('userId').equals(user.id).toArray();
+    setMedicines(meds); setSchedules(scheds);
+
+    const expiringSoon = meds.filter(m =&gt; {
+      const d = getDaysUntilExpiry(m.expiryDate); return d &gt;= 0 &amp;&amp; d &lt;= 30;
+    }).length;
+    const todayDoses = scheds.reduce((c, s) =&gt; c + (s.times?.length || 0), 0);
+    const stockSummary = await stockMonitoringService.getStockSummary(user.id);
+    const adherenceRate = calculateAdherenceRate(scheds);
+    setStats({ total: meds.length, expiringSoon, todayDoses,
+               adherenceRate, ...stockSummary });
+  };
+
+  const calculateAdherenceRate = (schedules: MedicineSchedule[]): number =&gt; {
+    if (!schedules.length) return 0;
+    const now = new Date(), sevenDaysAgo = new Date(now);
+    sevenDaysAgo.setDate(now.getDate() - 7);
+    let totalDoses = 0, takenDoses = 0;
+    schedules.forEach(schedule =&gt; {
+      const start = new Date(schedule.startDate);
+      const end   = schedule.endDate ? new Date(schedule.endDate) : now;
+      for (let d = new Date(sevenDaysAgo); d &lt;= now; d.setDate(d.getDate() + 1))
+        if (d &gt;= start &amp;&amp; d &lt;= end) totalDoses += schedule.times?.length || 0;
+      schedule.taken?.forEach(r =&gt; {
+        const td = new Date(r.date);
+        if (td &gt;= sevenDaysAgo &amp;&amp; td &lt;= now &amp;&amp; r.taken) takenDoses++;
+      });
+    });
+    return totalDoses === 0 ? 0 : Math.round((takenDoses / totalDoses) * 100);
+  };
+
+  // Returns JSX: stock alerts, stat cards (Total/Expiring/Doses/Adherence),
+  // quick-action links (Add / Scan / Donate), upcoming doses list,
+  // expiring medicines list, and AI-powered feature cards.
+}
+        </pre>
+    </div>
+
+    <!-- Page: NGO DASHBOARD -->
+    <div class="page">
+        <div
+            style="text-align:center;font-weight:bold;font-size:11pt;border-bottom:1px solid #ccc;padding-bottom:4px;margin-bottom:12px;">
+            Source Code &mdash; Mediloop</div>
+        <h3 style="text-align:center;margin-bottom:8px;">NGO DASHBOARD</h3>
+        <p style="margin-bottom:6px;"><em>File: <code>src/pages/ngo/Dashboard.tsx</code></em></p>
+        <pre style="background:#f1f5f9;padding:10px;font-size:8.5pt;border-radius:4px;line-height:1.5;overflow-x:auto;">
+import { useEffect, useState } from 'react';
+import { Heart, Package, Clock, CheckCircle,
+         AlertCircle, TrendingUp, Users } from 'lucide-react';
+import { useAuthStore } from '../../store/useAuthStore';
+import { db } from '../../db';
+import { Donation } from '../../types';
+import toast from 'react-hot-toast';
+import { API_URL } from '../../config/api';
+
+export default function NGODashboard() {
+  const { user } = useAuthStore();
+  const [stats, setStats] = useState({
+    totalDonations: 0, pendingDonations: 0, completedDonations: 0,
+    totalMedicines: 0, activeDonors: 0, thisMonthDonations: 0,
+  });
+  const [recentDonations, setRecentDonations] = useState&lt;Donation[]&gt;([]);
+  const [loading, setLoading] = useState(true);
+  const [ngoProfile, setNgoProfile] = useState&lt;any&gt;(null);
+
+  useEffect(() =&gt; { if (user) loadDashboardData(); }, [user]);
+
+  const loadDashboardData = async () =&gt; {
+    setLoading(true);
+    // Auto-register or fetch existing NGO profile
+    const ngoRes = await fetch(`${API_URL}/api/ngos/${user?.id}`);
+    if (ngoRes.ok) {
+      setNgoProfile(await ngoRes.json());
+    } else if (ngoRes.status === 404 &amp;&amp; user) {
+      await fetch(`${API_URL}/api/ngos`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: user.id, name: user.name,
+          email: user.email, verified: true, location: { lat: 28.7041, lng: 77.1025 } }),
+      });
+    }
+
+    // Fetch donations routed to this NGO
+    const donationsRes = await fetch(`${API_URL}/api/donations/ngo/${user?.id}`);
+    let donations: Donation[] = [];
+    if (donationsRes.ok) {
+      donations = (await donationsRes.json()).map((d: any) =&gt; ({
+        ...d, createdAt: new Date(d.createdAt), updatedAt: new Date(d.updatedAt),
+        medicines: d.medicines.map((m: any) =&gt; ({ ...m, expiryDate: new Date(m.expiryDate) }))
+      }));
+    }
+
+    const pending   = donations.filter(d =&gt; d.status === 'pending').length;
+    const completed = donations.filter(d =&gt; d.status === 'completed').length;
+    const totalMeds = donations.reduce((s, d) =&gt; s + d.medicines.length, 0);
+
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const activeDonors = new Set(
+      donations.filter(d =&gt; d.createdAt &gt; thirtyDaysAgo).map(d =&gt; d.userId)
+    ).size;
+
+    const thisMonth = new Date(); thisMonth.setDate(1); thisMonth.setHours(0,0,0,0);
+    const thisMonthDonations = donations.filter(d =&gt; d.createdAt &gt;= thisMonth).length;
+
+    setStats({ totalDonations: donations.length, pendingDonations: pending,
+      completedDonations: completed, totalMedicines: totalMeds,
+      activeDonors, thisMonthDonations });
+    setRecentDonations(
+      donations.sort((a,b) =&gt; b.createdAt.getTime()-a.createdAt.getTime()).slice(0,5));
+    setLoading(false);
+  };
+  // Returns JSX: NGO info card, stat grid, urgent alerts, recent donations, quick actions.
+}
+        </pre>
+    </div>
+
+    <!-- Page: DB SCHEMA + BACKEND -->
+    <div class="page">
+        <div
+            style="text-align:center;font-weight:bold;font-size:11pt;border-bottom:1px solid #ccc;padding-bottom:4px;margin-bottom:12px;">
+            Source Code &mdash; Mediloop</div>
+        <h3 style="text-align:center;margin-bottom:8px;">DATABASE SCHEMA &amp; BACKEND SERVER</h3>
+        <p style="margin-bottom:4px;"><em>File: <code>src/db/index.ts</code></em></p>
+        <pre style="background:#f1f5f9;padding:10px;font-size:8.5pt;border-radius:4px;line-height:1.5;overflow-x:auto;">
+import Dexie, { Table } from 'dexie';
+import { User, Medicine, MedicineSchedule, Donation,
+         NGO, Hospital, AppNotification,
+         AnalyticsData, HealthRecord } from '../types';
+
+export class MediloopDB extends Dexie {
+  users!:         Table&lt;User&gt;;
+  medicines!:     Table&lt;Medicine&gt;;
+  schedules!:     Table&lt;MedicineSchedule&gt;;
+  donations!:     Table&lt;Donation&gt;;
+  ngos!:          Table&lt;NGO&gt;;
+  hospitals!:     Table&lt;Hospital&gt;;
+  notifications!: Table&lt;AppNotification&gt;;
+  analytics!:     Table&lt;AnalyticsData&gt;;
+  healthRecords!: Table&lt;HealthRecord&gt;;
+
+  constructor() {
+    super('MediloopDB');
+    this.version(2).stores({
+      users:         'id, email, role, createdAt',
+      medicines:     'id, userId, name, category, expiryDate, createdAt',
+      schedules:     'id, medicineId, userId, startDate, endDate',
+      donations:     'id, userId, ngoId, hospitalId, status, createdAt',
+      ngos:          'id, name, verified',
+      hospitals:     'id, name, verified',
+      notifications: 'id, userId, type, read, createdAt',
+      analytics:     'id, userId, period, date',
+      healthRecords: 'id, userId, type, date, createdAt',
+    });
+  }
+}
+export const db = new MediloopDB();
+        </pre>
+        <p style="margin-top:12px;margin-bottom:4px;"><em>File: <code>backend/src/server.js</code></em></p>
+        <pre style="background:#f1f5f9;padding:10px;font-size:8.5pt;border-radius:4px;line-height:1.5;overflow-x:auto;">
+const express  = require('express');
+const cors     = require('cors');
+const mongoose = require('mongoose');
+require('dotenv').config();
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+mongoose.connect(process.env.MONGO_URI)
+  .then(() =&gt; console.log('MongoDB Atlas connected'))
+  .catch(err =&gt; console.error('DB Error:', err));
+
+app.use('/api/auth',      require('./routes/auth'));
+app.use('/api/medicines', require('./routes/medicines'));
+app.use('/api/donations', require('./routes/donations'));
+app.use('/api/ngos',      require('./routes/ngos'));
+app.use('/api/admin',     require('./routes/admin'));
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () =&gt; console.log(`Server running on port ${PORT}`));
+        </pre>
+    </div>
+
+    <!-- CHAPTER 11: APPENDIX B -->
+
+
+
+    <!-- CHAPTER 11: APPENDIX B -->
+    <div class="page">
+        <div class="chapter-label">Chapter 11</div>
+        <h1>Appendix B: Screenshots</h1>
+        <h2>11.1 Web Application</h2>
+        <table>
+            <tr>
+                <th>Screen</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td>Login / Register</td>
+                <td>Role-based registration with Firebase Auth; clean card layout with form validation.</td>
+            </tr>
+            <tr>
+                <td>Patient Dashboard</td>
+                <td>Medicine count, upcoming doses, expiry warnings, adherence score with color-coded cards.</td>
+            </tr>
+            <tr>
+                <td>Add Medicine</td>
+                <td>Validated form for name, category, dosage, quantity, expiry date.</td>
+            </tr>
+            <tr>
+                <td>OCR Scan</td>
+                <td>Camera/file upload with real-time OCR processing and parsed field preview.</td>
+            </tr>
+            <tr>
+                <td>Schedule &amp; Reminders</td>
+                <td>Calendar-style daily medication view with push notification toggle.</td>
+            </tr>
+            <tr>
+                <td>Donation Page</td>
+                <td>Medicine checkbox grid, NGO/Hospital map picker, one-click pickup request.</td>
+            </tr>
+            <tr>
+                <td>AI Health Assistant</td>
+                <td>Chat interface with Gemini-powered contextual responses.</td>
+            </tr>
+            <tr>
+                <td>Reports</td>
+                <td>Summary table with PDF and Excel export buttons.</td>
+            </tr>
+            <tr>
+                <td>NGO Dashboard</td>
+                <td>Incoming donation requests with accept/reject and pickup scheduling.</td>
+            </tr>
+            <tr>
+                <td>Admin Dashboard</td>
+                <td>User table with role filters, analytics charts, NGO verification controls.</td>
+            </tr>
+            <tr>
+                <td>Elderly Mode</td>
+                <td>Dashboard with 18pt+ fonts, large touch targets, high-contrast colors.</td>
+            </tr>
+        </table>
+        <p><em>Actual screenshot images are available in the project's <code>public/screenshots/</code> directory.</em>
+        </p>
+        <h2>11.2 Android (PWA)</h2>
+        <ul>
+            <li>Splash screen with Mediloop logo on launch.</li>
+            <li>Mobile-responsive dashboard with bottom navigation bar.</li>
+            <li>Camera-integrated OCR scan on supported Android devices.</li>
+            <li>Push notifications delivered to the Android notification tray.</li>
+        </ul>
+    </div>
+
+    <!-- CHAPTER 12: BIBLIOGRAPHY -->
+    <div class="page">
+        <div class="chapter-label">Chapter 12</div>
+        <h1>Bibliography</h1>
+        <table>
+            <tr>
+                <th>#</th>
+                <th>Reference</th>
+            </tr>
+            <tr>
+                <td>1</td>
+                <td>React Documentation. (2024). <em>React – The Library for Web and Native User Interfaces.</em>
+                    https://react.dev</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>Microsoft. (2024). <em>TypeScript Documentation.</em> https://www.typescriptlang.org/docs/</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>Google. (2024). <em>Firebase Documentation.</em> https://firebase.google.com/docs</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>Dexie.js Authors. (2024). <em>Dexie.js – IndexedDB Wrapper.</em> https://dexie.org/docs/</td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td>Tesseract.js Authors. (2024). <em>Pure JavaScript OCR.</em> https://tesseract.projectnaptha.com/
+                </td>
+            </tr>
+            <tr>
+                <td>6</td>
+                <td>Google DeepMind. (2024). <em>Gemini API Documentation.</em> https://ai.google.dev/docs</td>
+            </tr>
+            <tr>
+                <td>7</td>
+                <td>MongoDB Inc. (2024). <em>MongoDB Atlas Documentation.</em> https://www.mongodb.com/docs/atlas/</td>
+            </tr>
+            <tr>
+                <td>8</td>
+                <td>Vercel Inc. (2024). <em>Vercel Deployment Docs.</em> https://vercel.com/docs</td>
+            </tr>
+            <tr>
+                <td>9</td>
+                <td>Tailwind Labs. (2024). <em>TailwindCSS Documentation.</em> https://tailwindcss.com/docs</td>
+            </tr>
+            <tr>
+                <td>10</td>
+                <td>WHO. (2023). <em>Medicine Wastage and Public Health Impact.</em> World Health Organization Technical
+                    Report.</td>
+            </tr>
+            <tr>
+                <td>11</td>
+                <td>Pressman, R. S., &amp; Maxim, B. R. (2019). <em>Software Engineering: A Practitioner's Approach</em>
+                    (9th ed.). McGraw-Hill.</td>
+            </tr>
+            <tr>
+                <td>12</td>
+                <td>Sommerville, I. (2015). <em>Software Engineering</em> (10th ed.). Pearson Education.</td>
+            </tr>
+        </table>
+        <br />
+        <p style="text-align:center;font-style:italic;margin-top:30px;">— End of Documentation —</p>
+        <p style="text-align:center;color:#555;font-size:11pt;">Mediloop &nbsp;|&nbsp; Version 1.0.0 &nbsp;|&nbsp; 2024
+            &nbsp;|&nbsp; MIT License</p>
+    </div>
+
+</body>
+
+</html>

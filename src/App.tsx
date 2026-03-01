@@ -51,8 +51,6 @@ function App() {
   const { isAuthenticated, user, initialize } = useAuthStore();
   const { theme, elderlyMode } = useThemeStore();
 
-  console.log('App Render:', { isAuthenticated, role: user?.role, userId: user?.id });
-
   useEffect(() => {
     // Apply theme
     if (theme === 'dark') {

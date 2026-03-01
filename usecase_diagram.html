@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Mediloop – Use Case Diagram</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f5f5f0;
+            font-family: 'Times New Roman', Times, serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 14px;
+        }
+
+        h1 {
+            font-size: 20px;
+            font-weight: bold;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            color: #111;
+        }
+
+        .sub {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 22px;
+            font-style: italic;
+        }
+
+        .wrap {
+            background: #fff;
+            border: 1px solid #bbb;
+            box-shadow: 4px 4px 12px rgba(0, 0, 0, .12);
+            margin-bottom: 40px;
+        }
+
+        .stitle {
+            font-size: 13px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            text-align: center;
+            padding: 10px 0 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>USE CASE DIAGRAM</h1>
+    <p class="sub">Mediloop Health Management System</p>
+
+    <!-- ══════════════════ ADMIN ══════════════════ -->
+    <div class="stitle">USE CASE 1 : ADMIN</div>
+    <div class="wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" width="700" height="660" viewBox="0 0 700 660">
+            <defs>
+                <marker id="ar" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                    <polygon points="0 0,8 3,0 6" fill="#222" />
+                </marker>
+            </defs>
+
+            <!-- system boundary -->
+            <rect x="200" y="20" width="480" height="624" fill="#fff" stroke="#555" stroke-width="1.5" rx="4" />
+            <text x="440" y="14" text-anchor="middle" font-size="11" fill="#555" font-style="italic">Mediloop
+                System</text>
+
+            <!-- stick figure -->
+            <circle cx="90" cy="60" r="18" fill="none" stroke="#222" stroke-width="2" />
+            <line x1="90" y1="78" x2="90" y2="140" stroke="#222" stroke-width="2" />
+            <line x1="90" y1="95" x2="55" y2="120" stroke="#222" stroke-width="2" />
+            <line x1="90" y1="95" x2="125" y2="120" stroke="#222" stroke-width="2" />
+            <line x1="90" y1="140" x2="55" y2="185" stroke="#222" stroke-width="2" />
+            <line x1="90" y1="140" x2="125" y2="185" stroke="#222" stroke-width="2" />
+            <text x="90" y="210" text-anchor="middle" font-size="14" font-weight="bold">ADMIN</text>
+
+            <!-- use cases + lines from actor (90,120) -->
+            <!-- 1 Login -->
+            <ellipse cx="450" cy="58" rx="100" ry="22" fill="#fff" stroke="#333" stroke-width="1.5" />
+            <text x="450" cy="58" y="63" text-anchor="middle" font-size="12">Login</text>
+            <line x1="125" y1="100" x2="350" y2="58" stroke="#222" stroke-width="1.2" marker-end="url(#ar)" />
+
+            <!-- 2 View Dashboard Stats -->
+            <ellipse cx="460" cy="116" rx="120" ry="22" fill="#fff" stroke="#333" stroke-width="1.5" />
+            <text x="460" y="121" text-anchor="middle" font-size="12">View Dashboard Stats</text>
+            <line x1="125" y1="108" x2="340" y2="116" stroke="#222" stroke-width="1.2" marker-end="url(#ar)" />
+
+            <!-- 3 Manage Users -->
+            <ellipse cx="450" cy="174" rx="110" ry="22" fill="#fff" stroke="#333" stroke-width="1.5" />
+            <text x="450" y="179" text-anchor="middle" font-size="12">Manage Users &amp; Roles</text>
+            <line x1="125" y1="115" x2="340" y2="174" stroke="#222" stroke-width="1.2" marker-end="url(#ar)" />
+
+            <!-- 4 Manage Medicines -->
+            <ellipse cx="450" cy="232" rx="112" ry="22" fill="#fff" stroke="#333" stroke-width="1.5" />
+            <text x="450" y="237" text-anchor="middle" font-size="12">Manage Medicines</text>
+            <line x1="125" y1="120" x2="338" y2="232" stroke="#222" stroke-width="1.2" marker-end="url(#ar)" />
+
+            <!-- 5 View Donations -->
+            <ellipse cx="450" cy="290" rx="116" ry="22" fill="#fff" stroke="#333" stroke-width="1.5" />
+            <text x="450" y="295" text-anchor="middle" font-size="12">View &amp; Approve Donations</text>
+            <line x1="125" y1="125" x2="334" y2="290" stroke="#222" stroke-width="1.2" marker-end="url(#ar)" />
+
+            <!-- 6 View System Logs -->
+            <ellipse cx="450" cy="348" rx="110" ry="22" fill="#fff" stroke="#333" stroke-width="1.5" />
+            <text x="450" y="353" text-anchor="middle" font-size="12">View System Logs</text>
+            <line x1="125" y1="130" x2="340" y2="348" stroke="#222" stroke-width="1.2" marker-end="url(#ar)" />
+
+            <!-- 7 Update System Settings -->
+            <ellipse cx="450" cy="406" rx="120" ry="22" fill="#fff" stroke="#333" stroke-width="1.5" />
+            <text x="450" y="411" text-anchor="middle" font-size="12">Update System Settings</text>
+            <line x1="125" y1="136" x2="330" y2="406" stroke="#222" stroke-width="1.2" marker-end="url(#ar)" />
+
+            <!-- 8 View & Verify NGOs -->
+            <ellipse cx="450" cy="464" rx="116" ry="22" fill="#fff" stroke="#333" stroke-width="1.5" />
+            <text x="450" y="469" text-anchor="middle" font-size="12">View &amp; Verify NGOs</text>
+            <line x1="125" y1="144" x2="334" y2="464" stroke="#222" stroke-width="1.2" marker-end="url(#ar)" />
+
+            <!-- 9 Manage Hospitals -->
+            <ellipse cx="450" cy="522" rx="114" ry="22" fill="#fff" stroke="#333" stroke-width="1.5" />
+            <text x="450" y="527" text-anchor="middle" font-size="12">Manage Hospitals</text>
+            <line x1="125" y1="155" x2="336" y2="522" stroke="#222" stroke-width="1.2" marker-end="url(#ar)" />
+
+            <!-- 10 View Sync Data -->
+            <ellipse cx="450" cy="580" rx="108" ry="22" fill="#fff" stroke="#333" stroke-width="1.5" />
+            <text x="450" y="585" text-anchor="middle" font-size="12">Monitor Sync Activity</text>
+            <line x1="125" y1="165" x2="342" y2="580" stroke="#222" stroke-width="1.2" marker-end="url(#ar)" />
+
+            <!-- 11 Logout -->
+            <ellipse cx="450" cy="632" rx="72" ry="20" fill="#fff" stroke="#333" stroke-width="1.5" />
+            <text x="450" y="637" text-anchor="middle" font-size="12">Logout</text>
+            <line x1="125" y1="175" x2="378" y2="632" stroke="#222" stroke-width="1.2" marker-end="url(#ar)" />
+        </svg>
+    </div>
+
+    <!-- ══════════════════ PATIENT ══════════════════ -->
+    <div class="stitle">USE CASE 2 : PATIENT</div>
+    <div class="wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" width="700" height="980" viewBox="0 0 700 980">
+            <defs>
+                <marker id="ap" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                    <polygon points="0 0,8 3,0 6" fill="#222" />
+                </marker>
+            </defs>
+
+            <!-- system boundary -->
+            <rect x="200" y="20" width="480" height="944" fill="#fff" stroke="#555" stroke-width="1.5" rx="4" />
+            <text x="440" y="14" text-anchor="middle" font-size="11" fill="#555" font-style="italic">Mediloop
+                System</text>
+
+            <!-- stick figure - centred vertically at ~440 -->
+            <circle cx="90" cy="380" r="18" fill="none" stroke="#222" stroke-width="2" />
+            <line x1="90" y1="398" x2="90" y2="460" stroke="#222" stroke-width="2" />
+            <line x1="90" y1="415" x2="55" y2="440" stroke="#222" stroke-width="2" />
+            <line x1="90" y1="415" x2="125" y2="440" stroke="#222" stroke-width="2" />
+            <line x1="90" y1="460" x2="55" y2="505" stroke="#222" stroke-width="2" />
+            <line x1="90" y1="460" x2="125" y2="505" stroke="#222" stroke-width="2" />
+            <text x="90" y="530" text-anchor="middle" font-size="14" font-weight="bold">PATIENT</text>
+
+            <!-- Use cases (fan from 125,430) -->
+            <ellipse cx="450" cy="54" rx="100" ry="22" fill="#fff" stroke="#333" stroke-width="1.5" />
+            <text x="450" y="59" text-anchor="middle" font-size="12">Register</text>
+            <line x1="125" y1="405" x2="350" y2="56" stroke="#222" stroke-width="1.2" marker-end="url(#ap)" />
+
+            <ellipse cx="450" cy="110" rx="70" ry="22" fill="#fff" stroke="#333" stroke-width="1.5" />
+            <text x="450" y="115" text-anchor="middle" font-size="12">Login</text>
+            <line x1="125" y1="410" x2="380" y2="112" stroke="#222" stroke-width="1.2" marker-end="url(#ap)" />
+
+            <ellipse cx="450" cy="166" rx="130" ry="22" fill="#fff" stroke="#333" stroke-width="1.5" />
+            <text x="450" y="171" text-anchor="middle" font-size="12">Update Profile &amp; Settings</text>
+            <line x1="125" y1="414" x2="320" y2="168" stroke="#222" stroke-width="1.2" marker-end="url(#ap)" />
+
+            <ellipse cx="450" cy="222" rx="120" ry="22" fill="#fff" stroke="#333" stroke-width="1.5" />
+            <text x="450" y="227" text-anchor="middle" font-size="12">View Dashboard</text>
+            <line x1="125" y1="418" x2="330" y2="224" stroke="#222" stroke-width="1.2" marker-end="url(#ap)" />
+
+            <ellipse cx="450" cy="278" rx="130" ry="22" fill="#fff" stroke="#333" stroke-width="1.5" />
+            <text x="450" y="283" text-anchor="middle" font-size="12">Add / View Medicines</text>
+            <line x1="125" y1="422" x2="320" y2="280" stroke="#222" stroke-width="1.2" marker-end="url(#ap)" />
+
+            <ellipse cx="450" cy="334" rx="140" ry="22" fill="#fff" stroke="#333" stroke-width="1.5" />
+            <text x="450" y="339" text-anchor="middle" font-size="12">Manage Medicine Schedule</text>
+            <line x1="125" y1="426" x2="310" y2="336" stroke="#222" stroke-width="1.2" marker-end="url(#ap)" />
+
+            <ellipse cx="450" cy="390" rx="130" ry="22" fill="#fff" stroke="#333" stroke-width="1.5" />
+            <text x="450" y="395" text-anchor="middle" font-size="12">Track Health Records</text>
+            <line x1="125" y1="430" x2="320" y2="390" stroke="#222" stroke-width="1.2" marker-end="url(#ap)" />
+
+            <ellipse cx="450" cy="446" rx="128" ry="22" fill="#fff" stroke="#333" stroke-width="1.5" />
+            <text x="450" y="451" text-anchor="middle" font-size="12">View Health Analytics</text>
+            <line x1="125" y1="434" x2="322" y2="447" stroke="#222" stroke-width="1.2" marker-end="url(#ap)" />
+
+            <ellipse cx="450" cy="502" rx="130" ry="22" fill="#fff" stroke="#333" stroke-width="1.5" />
+            <text x="450" y="507" text-anchor="middle" font-size="12">Check Drug Interactions</text>
+            <line x1="125" y1="440" x2="320" y2="503" stroke="#222" stroke-width="1.2" marker-end="url(#ap)" />
+
+            <ellipse cx="450" cy="558" rx="122" ry="22" fill="#fff" stroke="#333" stroke-width="1.5" />
+            <text x="450" y="563" text-anchor="middle" font-size="12">Use Symptom Checker</text>
+            <line x1="125" y1="446" x2="328" y2="559" stroke="#222" stroke-width="1.2" marker-end="url(#ap)" />
+
+            <ellipse cx="450" cy="614" rx="136" ry="22" fill="#fff" stroke="#333" stroke-width="1.5" />
+            <text x="450" y="619" text-anchor="middle" font-size="12">Submit Donation Request</text>
+            <line x1="125" y1="452" x2="314" y2="614" stroke="#222" stroke-width="1.2" marker-end="url(#ap)" />
+
+            <ellipse cx="450" cy="670" rx="130" ry="22" fill="#fff" stroke="#333" stroke-width="1.5" />
+            <text x="450" y="675" text-anchor="middle" font-size="12">View Donation History</text>
+            <line x1="125" y1="460" x2="320" y2="671" stroke="#222" stroke-width="1.2" marker-end="url(#ap)" />
+
+            <ellipse cx="450" cy="726" rx="146" ry="22" fill="#fff" stroke="#333" stroke-width="1.5" />
+            <text x="450" y="731" text-anchor="middle" font-size="12">Family Sync / Caregiver Link</text>
+            <line x1="125" y1="468" x2="304" y2="727" stroke="#222" stroke-width="1.2" marker-end="url(#ap)" />
+
+            <ellipse cx="450" cy="782" rx="134" ry="22" fill="#fff" stroke="#333" stroke-width="1.5" />
+            <text x="450" y="787" text-anchor="middle" font-size="12">AI Medicine Assistant</text>
+            <line x1="125" y1="476" x2="316" y2="782" stroke="#222" stroke-width="1.2" marker-end="url(#ap)" />
+
+            <ellipse cx="450" cy="838" rx="138" ry="22" fill="#fff" stroke="#333" stroke-width="1.5" />
+            <text x="450" y="843" text-anchor="middle" font-size="12">View Health Tips &amp; Reports</text>
+            <line x1="125" y1="486" x2="312" y2="838" stroke="#222" stroke-width="1.2" marker-end="url(#ap)" />
+
+            <ellipse cx="450" cy="894" rx="80" ry="22" fill="#fff" stroke="#333" stroke-width="1.5" />
+            <text x="450" y="899" text-anchor="middle" font-size="12">Logout</text>
+            <line x1="125" y1="496" x2="370" y2="894" stroke="#222" stroke-width="1.2" marker-end="url(#ap)" />
+        </svg>
+    </div>
+
+    <!-- ══════════════════ NGO ══════════════════ -->
+    <div class="stitle">USE CASE 3 : NGO</div>
+    <div class="wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" width="700" height="560" viewBox="0 0 700 560">
+            <defs>
+                <marker id="an" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                    <polygon points="0 0,8 3,0 6" fill="#222" />
+                </marker>
+            </defs>
+
+            <!-- system boundary -->
+            <rect x="200" y="20" width="480" height="524" fill="#fff" stroke="#555" stroke-width="1.5" rx="4" />
+            <text x="440" y="14" text-anchor="middle" font-size="11" fill="#555" font-style="italic">Mediloop
+                System</text>
+
+            <!-- stick figure centred at ~250 -->
+            <circle cx="90" cy="200" r="18" fill="none" stroke="#222" stroke-width="2" />
+            <line x1="90" y1="218" x2="90" y2="280" stroke="#222" stroke-width="2" />
+            <line x1="90" y1="235" x2="55" y2="260" stroke="#222" stroke-width="2" />
+            <line x1="90" y1="235" x2="125" y2="260" stroke="#222" stroke-width="2" />
+            <line x1="90" y1="280" x2="55" y2="325" stroke="#222" stroke-width="2" />
+            <line x1="90" y1="280" x2="125" y2="325" stroke="#222" stroke-width="2" />
+            <text x="90" y="350" text-anchor="middle" font-size="14" font-weight="bold">NGO</text>
+
+            <!-- Use cases -->
+            <ellipse cx="450" cy="55" rx="80" ry="22" fill="#fff" stroke="#333" stroke-width="1.5" />
+            <text x="450" y="60" text-anchor="middle" font-size="12">Register</text>
+            <line x1="125" y1="220" x2="370" y2="58" stroke="#222" stroke-width="1.2" marker-end="url(#an)" />
+
+            <ellipse cx="450" cy="115" rx="70" ry="22" fill="#fff" stroke="#333" stroke-width="1.5" />
+            <text x="450" y="120" text-anchor="middle" font-size="12">Login</text>
+            <line x1="125" y1="228" x2="380" y2="117" stroke="#222" stroke-width="1.2" marker-end="url(#an)" />
+
+            <ellipse cx="450" cy="175" rx="122" ry="22" fill="#fff" stroke="#333" stroke-width="1.5" />
+            <text x="450" y="180" text-anchor="middle" font-size="12">Manage NGO Profile</text>
+            <line x1="125" y1="235" x2="328" y2="176" stroke="#222" stroke-width="1.2" marker-end="url(#an)" />
+
+            <ellipse cx="450" cy="235" rx="136" ry="22" fill="#fff" stroke="#333" stroke-width="1.5" />
+            <text x="450" y="240" text-anchor="middle" font-size="12">View Donation Requests</text>
+            <line x1="125" y1="242" x2="314" y2="236" stroke="#222" stroke-width="1.2" marker-end="url(#an)" />
+
+            <ellipse cx="450" cy="295" rx="140" ry="22" fill="#fff" stroke="#333" stroke-width="1.5" />
+            <text x="450" y="300" text-anchor="middle" font-size="12">Accept / Reject Donation</text>
+            <line x1="125" y1="250" x2="310" y2="296" stroke="#222" stroke-width="1.2" marker-end="url(#an)" />
+
+            <ellipse cx="450" cy="355" rx="148" ry="22" fill="#fff" stroke="#333" stroke-width="1.5" />
+            <text x="450" y="360" text-anchor="middle" font-size="12">Update Donation Status</text>
+            <line x1="125" y1="260" x2="302" y2="356" stroke="#222" stroke-width="1.2" marker-end="url(#an)" />
+
+            <ellipse cx="450" cy="415" rx="148" ry="22" fill="#fff" stroke="#333" stroke-width="1.5" />
+            <text x="450" y="420" text-anchor="middle" font-size="12">View Donation History</text>
+            <line x1="125" y1="272" x2="302" y2="415" stroke="#222" stroke-width="1.2" marker-end="url(#an)" />
+
+            <ellipse cx="450" cy="475" rx="140" ry="22" fill="#fff" stroke="#333" stroke-width="1.5" />
+            <text x="450" y="480" text-anchor="middle" font-size="12">Notify Patient / Status Update</text>
+            <line x1="125" y1="285" x2="310" y2="475" stroke="#222" stroke-width="1.2" marker-end="url(#an)" />
+
+            <ellipse cx="450" cy="528" rx="72" ry="20" fill="#fff" stroke="#333" stroke-width="1.5" />
+            <text x="450" y="533" text-anchor="middle" font-size="12">Logout</text>
+            <line x1="125" y1="300" x2="378" y2="528" stroke="#222" stroke-width="1.2" marker-end="url(#an)" />
+        </svg>
+    </div>
+
+    <p style="font-size:11px;color:#888;text-align:center;margin-top:4px;">
+        Mediloop Health Management System &nbsp;|&nbsp; Use Case Diagrams – Admin · Patient · NGO
+    </p>
+</body>
+
+</html>

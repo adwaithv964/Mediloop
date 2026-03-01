@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Mediloop – Level 1 DFD</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f5f5f0;
+            font-family: 'Times New Roman', Times, serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            font-size: 22px;
+            font-weight: bold;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            text-align: center;
+            color: #111;
+        }
+
+        .sub {
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 36px;
+            text-align: center;
+            font-style: italic;
+        }
+
+        .sec {
+            margin-bottom: 56px;
+            background: #fff;
+            border: 1px solid #bbb;
+            padding: 20px 28px 28px;
+            box-shadow: 5px 5px 14px rgba(0, 0, 0, .13);
+        }
+
+        .stitle {
+            font-size: 14px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            margin-bottom: 18px;
+            text-transform: uppercase;
+        }
+
+        .legend {
+            margin-top: 20px;
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .li {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #333;
+        }
+
+        .lbox {
+            width: 26px;
+            height: 17px;
+            border: 2px solid #333;
+            background: #fff;
+        }
+
+        .lell {
+            width: 40px;
+            height: 20px;
+            border: 2px solid #333;
+            border-radius: 50%;
+            background: #fff;
+        }
+
+        .lds {
+            width: 26px;
+            height: 17px;
+            border: 2px solid #333;
+            background: #eaeaea;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>LEVEL 1</h1>
+    <p class="sub">Decomposed Data Flow Diagrams – <strong>Mediloop Health Management System</strong></p>
+
+    <!-- ═══════════════════════════════════════════ LEVEL 1.1 ADMIN ══ -->
+    <div class="sec">
+        <div class="stitle">LEVEL 1.1 : ADMIN</div>
+        <svg xmlns="http://www.w3.org/2000/svg" width="820" height="580" viewBox="0 0 820 580">
+            <defs>
+                <marker id="a1" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                    <polygon points="0 0,9 3.5,0 7" fill="#222" />
+                </marker>
+            </defs>
+            <rect x="6" y="6" width="808" height="568" fill="none" stroke="#aaa" stroke-width="1"
+                stroke-dasharray="5,4" />
+
+            <!-- Actor -->
+            <rect x="20" y="240" width="110" height="48" fill="#fff" stroke="#333" stroke-width="2" rx="3" />
+            <text x="75" y="269" text-anchor="middle" font-size="14" font-weight="bold">Admin</text>
+
+            <!-- Processes cx=310 -->
+            <ellipse cx="310" cy="55" rx="98" ry="28" fill="#fff" stroke="#333" stroke-width="1.8" />
+            <text x="310" y="60" text-anchor="middle" font-size="12" font-weight="bold">1. Login</text>
+
+            <ellipse cx="310" cy="135" rx="98" ry="28" fill="#fff" stroke="#333" stroke-width="1.8" />
+            <text x="310" y="132" text-anchor="middle" font-size="11" font-weight="bold">2. Manage Users</text>
+            <text x="310" y="145" text-anchor="middle" font-size="11" font-weight="bold">&amp; Roles</text>
+
+            <ellipse cx="310" cy="215" rx="98" ry="28" fill="#fff" stroke="#333" stroke-width="1.8" />
+            <text x="310" y="212" text-anchor="middle" font-size="11" font-weight="bold">3. View Dashboard</text>
+            <text x="310" y="225" text-anchor="middle" font-size="11" font-weight="bold">Stats</text>
+
+            <ellipse cx="310" cy="295" rx="98" ry="28" fill="#fff" stroke="#333" stroke-width="1.8" />
+            <text x="310" y="292" text-anchor="middle" font-size="11" font-weight="bold">4. Manage</text>
+            <text x="310" y="305" text-anchor="middle" font-size="11" font-weight="bold">Medicines</text>
+
+            <ellipse cx="310" cy="375" rx="98" ry="28" fill="#fff" stroke="#333" stroke-width="1.8" />
+            <text x="310" y="372" text-anchor="middle" font-size="11" font-weight="bold">5. View &amp; Approve</text>
+            <text x="310" y="385" text-anchor="middle" font-size="11" font-weight="bold">Donations</text>
+
+            <ellipse cx="310" cy="455" rx="98" ry="28" fill="#fff" stroke="#333" stroke-width="1.8" />
+            <text x="310" y="452" text-anchor="middle" font-size="11" font-weight="bold">6. View System</text>
+            <text x="310" y="465" text-anchor="middle" font-size="11" font-weight="bold">Logs</text>
+
+            <ellipse cx="310" cy="535" rx="98" ry="28" fill="#fff" stroke="#333" stroke-width="1.8" />
+            <text x="310" y="532" text-anchor="middle" font-size="11" font-weight="bold">7. Update System</text>
+            <text x="310" y="545" text-anchor="middle" font-size="11" font-weight="bold">Settings</text>
+
+            <!-- Data Stores x=590 -->
+            <rect x="590" y="122" width="180" height="28" fill="#eaeaea" stroke="#333" stroke-width="1.5" />
+            <rect x="590" y="122" width="28" height="28" fill="#ddd" stroke="#333" stroke-width="1.5" />
+            <text x="604" y="141" text-anchor="middle" font-size="10" font-weight="bold">D1</text>
+            <text x="695" y="141" text-anchor="middle" font-size="11" font-weight="bold">Users</text>
+
+            <rect x="590" y="202" width="180" height="28" fill="#eaeaea" stroke="#333" stroke-width="1.5" />
+            <rect x="590" y="202" width="28" height="28" fill="#ddd" stroke="#333" stroke-width="1.5" />
+            <text x="604" y="221" text-anchor="middle" font-size="10" font-weight="bold">D2</text>
+            <text x="695" y="221" text-anchor="middle" font-size="11" font-weight="bold">Stats / Reports</text>
+
+            <rect x="590" y="282" width="180" height="28" fill="#eaeaea" stroke="#333" stroke-width="1.5" />
+            <rect x="590" y="282" width="28" height="28" fill="#ddd" stroke="#333" stroke-width="1.5" />
+            <text x="604" y="301" text-anchor="middle" font-size="10" font-weight="bold">D3</text>
+            <text x="695" y="301" text-anchor="middle" font-size="11" font-weight="bold">Medicines</text>
+
+            <rect x="590" y="362" width="180" height="28" fill="#eaeaea" stroke="#333" stroke-width="1.5" />
+            <rect x="590" y="362" width="28" height="28" fill="#ddd" stroke="#333" stroke-width="1.5" />
+            <text x="604" y="381" text-anchor="middle" font-size="10" font-weight="bold">D4</text>
+            <text x="695" y="381" text-anchor="middle" font-size="11" font-weight="bold">Donations</text>
+
+            <rect x="590" y="442" width="180" height="28" fill="#eaeaea" stroke="#333" stroke-width="1.5" />
+            <rect x="590" y="442" width="28" height="28" fill="#ddd" stroke="#333" stroke-width="1.5" />
+            <text x="604" y="461" text-anchor="middle" font-size="10" font-weight="bold">D5</text>
+            <text x="695" y="461" text-anchor="middle" font-size="11" font-weight="bold">System Logs</text>
+
+            <rect x="590" y="522" width="180" height="28" fill="#eaeaea" stroke="#333" stroke-width="1.5" />
+            <rect x="590" y="522" width="28" height="28" fill="#ddd" stroke="#333" stroke-width="1.5" />
+            <text x="604" y="541" text-anchor="middle" font-size="10" font-weight="bold">D6</text>
+            <text x="695" y="541" text-anchor="middle" font-size="11" font-weight="bold">Settings</text>
+
+            <!-- Actor → Processes -->
+            <line x1="130" y1="252" x2="212" y2="57" stroke="#333" stroke-width="1.3" marker-end="url(#a1)" />
+            <line x1="130" y1="256" x2="212" y2="133" stroke="#333" stroke-width="1.3" marker-end="url(#a1)" />
+            <line x1="130" y1="260" x2="212" y2="213" stroke="#333" stroke-width="1.3" marker-end="url(#a1)" />
+            <line x1="130" y1="264" x2="212" y2="293" stroke="#333" stroke-width="1.3" marker-end="url(#a1)" />
+            <line x1="130" y1="270" x2="212" y2="373" stroke="#333" stroke-width="1.3" marker-end="url(#a1)" />
+            <line x1="130" y1="278" x2="212" y2="453" stroke="#333" stroke-width="1.3" marker-end="url(#a1)" />
+            <line x1="130" y1="285" x2="212" y2="533" stroke="#333" stroke-width="1.3" marker-end="url(#a1)" />
+            <!-- Return: login response -->
+            <line x1="212" y1="50" x2="130" y2="248" stroke="#333" stroke-width="1.3" stroke-dasharray="5,3"
+                marker-end="url(#a1)" />
+
+            <!-- Process → Data Store (solid) and return (dashed) -->
+            <line x1="408" y1="130" x2="590" y2="134" stroke="#333" stroke-width="1.3" marker-end="url(#a1)" />
+            <line x1="590" y1="143" x2="408" y2="140" stroke="#333" stroke-width="1.3" stroke-dasharray="5,3"
+                marker-end="url(#a1)" />
+
+            <line x1="408" y1="210" x2="590" y2="214" stroke="#333" stroke-width="1.3" marker-end="url(#a1)" />
+            <line x1="590" y1="224" x2="408" y2="220" stroke="#333" stroke-width="1.3" stroke-dasharray="5,3"
+                marker-end="url(#a1)" />
+
+            <line x1="408" y1="290" x2="590" y2="294" stroke="#333" stroke-width="1.3" marker-end="url(#a1)" />
+            <line x1="590" y1="304" x2="408" y2="300" stroke="#333" stroke-width="1.3" stroke-dasharray="5,3"
+                marker-end="url(#a1)" />
+
+            <line x1="408" y1="370" x2="590" y2="374" stroke="#333" stroke-width="1.3" marker-end="url(#a1)" />
+            <line x1="590" y1="384" x2="408" y2="380" stroke="#333" stroke-width="1.3" stroke-dasharray="5,3"
+                marker-end="url(#a1)" />
+
+            <line x1="408" y1="450" x2="590" y2="454" stroke="#333" stroke-width="1.3" marker-end="url(#a1)" />
+            <line x1="590" y1="464" x2="408" y2="460" stroke="#333" stroke-width="1.3" stroke-dasharray="5,3"
+                marker-end="url(#a1)" />
+
+            <line x1="408" y1="530" x2="590" y2="534" stroke="#333" stroke-width="1.3" marker-end="url(#a1)" />
+            <line x1="590" y1="544" x2="408" y2="540" stroke="#333" stroke-width="1.3" stroke-dasharray="5,3"
+                marker-end="url(#a1)" />
+
+            <!-- flow labels actor side -->
+            <text x="147" y="143" font-size="8.5" fill="#444" transform="rotate(-50,147,143)">Credentials</text>
+            <text x="154" y="200" font-size="8.5" fill="#444" transform="rotate(-28,154,200)">User Data</text>
+            <text x="156" y="250" font-size="8.5" fill="#444" transform="rotate(-8,156,250)">Query</text>
+            <text x="155" y="290" font-size="8.5" fill="#444" transform="rotate(8,155,290)">Medicine Data</text>
+            <text x="151" y="338" font-size="8.5" fill="#444" transform="rotate(22,151,338)">Donation Query</text>
+            <text x="146" y="385" font-size="8.5" fill="#444" transform="rotate(35,146,385)">Log Filter</text>
+            <text x="141" y="432" font-size="8.5" fill="#444" transform="rotate(46,141,432)">Config Data</text>
+            <!-- flow labels store side -->
+            <text x="436" y="126" font-size="8.5" fill="#555">Read / Write Users</text>
+            <text x="436" y="206" font-size="8.5" fill="#555">Read Stats</text>
+            <text x="436" y="286" font-size="8.5" fill="#555">Read / Write Medicines</text>
+            <text x="436" y="366" font-size="8.5" fill="#555">Read Donations</text>
+            <text x="436" y="446" font-size="8.5" fill="#555">Read Logs</text>
+            <text x="436" y="526" font-size="8.5" fill="#555">Read / Write Settings</text>
+        </svg>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ LEVEL 1.2 PATIENT ══ -->
+    <div class="sec">
+        <div class="stitle">LEVEL 1.2 : PATIENT</div>
+        <svg xmlns="http://www.w3.org/2000/svg" width="820" height="1220" viewBox="0 0 820 1220">
+            <defs>
+                <marker id="a2" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                    <polygon points="0 0,9 3.5,0 7" fill="#222" />
+                </marker>
+            </defs>
+            <rect x="6" y="6" width="808" height="1208" fill="none" stroke="#aaa" stroke-width="1"
+                stroke-dasharray="5,4" />
+
+            <!-- Actor -->
+            <rect x="20" y="565" width="110" height="48" fill="#fff" stroke="#333" stroke-width="2" rx="3" />
+            <text x="75" y="594" text-anchor="middle" font-size="14" font-weight="bold">Patient</text>
+
+            <!-- ── Processes (cx=310, step=90) ── -->
+            <!-- P1 Login/Register -->
+            <ellipse cx="310" cy="55" rx="105" ry="28" fill="#fff" stroke="#333" stroke-width="1.8" />
+            <text x="310" y="52" text-anchor="middle" font-size="11" font-weight="bold">1. Login / Register</text>
+            <text x="310" y="65" text-anchor="middle" font-size="11" font-weight="bold">&amp; Profile Settings</text>
+
+            <!-- P2 View Dashboard -->
+            <ellipse cx="310" cy="145" rx="105" ry="28" fill="#fff" stroke="#333" stroke-width="1.8" />
+            <text x="310" y="142" text-anchor="middle" font-size="11" font-weight="bold">2. View</text>
+            <text x="310" y="155" text-anchor="middle" font-size="11" font-weight="bold">Dashboard</text>
+
+            <!-- P3 Add / View Medicines -->
+            <ellipse cx="310" cy="235" rx="105" ry="28" fill="#fff" stroke="#333" stroke-width="1.8" />
+            <text x="310" y="232" text-anchor="middle" font-size="11" font-weight="bold">3. Add / View</text>
+            <text x="310" y="245" text-anchor="middle" font-size="11" font-weight="bold">Medicines</text>
+
+            <!-- P4 Medicine Schedule -->
+            <ellipse cx="310" cy="325" rx="105" ry="28" fill="#fff" stroke="#333" stroke-width="1.8" />
+            <text x="310" y="322" text-anchor="middle" font-size="11" font-weight="bold">4. Manage Medicine</text>
+            <text x="310" y="335" text-anchor="middle" font-size="11" font-weight="bold">Schedule</text>
+
+            <!-- P5 Health Records -->
+            <ellipse cx="310" cy="415" rx="105" ry="28" fill="#fff" stroke="#333" stroke-width="1.8" />
+            <text x="310" y="412" text-anchor="middle" font-size="11" font-weight="bold">5. Track Health</text>
+            <text x="310" y="425" text-anchor="middle" font-size="11" font-weight="bold">Records</text>
+
+            <!-- P6 Analytics -->
+            <ellipse cx="310" cy="505" rx="105" ry="28" fill="#fff" stroke="#333" stroke-width="1.8" />
+            <text x="310" y="502" text-anchor="middle" font-size="11" font-weight="bold">6. View Health</text>
+            <text x="310" y="515" text-anchor="middle" font-size="11" font-weight="bold">Analytics</text>
+
+            <!-- P7 Drug Interactions -->
+            <ellipse cx="310" cy="595" rx="105" ry="28" fill="#fff" stroke="#333" stroke-width="1.8" />
+            <text x="310" y="592" text-anchor="middle" font-size="11" font-weight="bold">7. Check Drug</text>
+            <text x="310" y="605" text-anchor="middle" font-size="11" font-weight="bold">Interactions</text>
+
+            <!-- P8 Symptom Checker -->
+            <ellipse cx="310" cy="685" rx="105" ry="28" fill="#fff" stroke="#333" stroke-width="1.8" />
+            <text x="310" y="682" text-anchor="middle" font-size="11" font-weight="bold">8. Symptom</text>
+            <text x="310" y="695" text-anchor="middle" font-size="11" font-weight="bold">Checker</text>
+
+            <!-- P9 Submit Donation Request -->
+            <ellipse cx="310" cy="775" rx="105" ry="28" fill="#fff" stroke="#333" stroke-width="1.8" />
+            <text x="310" y="772" text-anchor="middle" font-size="11" font-weight="bold">9. Submit Donation</text>
+            <text x="310" y="785" text-anchor="middle" font-size="11" font-weight="bold">Request</text>
+
+            <!-- P10 Donation History -->
+            <ellipse cx="310" cy="865" rx="105" ry="28" fill="#fff" stroke="#333" stroke-width="1.8" />
+            <text x="310" y="862" text-anchor="middle" font-size="11" font-weight="bold">10. View Donation</text>
+            <text x="310" y="875" text-anchor="middle" font-size="11" font-weight="bold">History</text>
+
+            <!-- P11 Family Sync -->
+            <ellipse cx="310" cy="955" rx="105" ry="28" fill="#fff" stroke="#333" stroke-width="1.8" />
+            <text x="310" y="952" text-anchor="middle" font-size="11" font-weight="bold">11. Family Sync /</text>
+            <text x="310" y="965" text-anchor="middle" font-size="11" font-weight="bold">Caregiver Link</text>
+
+            <!-- P12 AI Assistant -->
+            <ellipse cx="310" cy="1045" rx="105" ry="28" fill="#fff" stroke="#333" stroke-width="1.8" />
+            <text x="310" y="1042" text-anchor="middle" font-size="11" font-weight="bold">12. AI Medicine</text>
+            <text x="310" y="1055" text-anchor="middle" font-size="11" font-weight="bold">Assistant</text>
+
+            <!-- P13 Health Tips -->
+            <ellipse cx="310" cy="1135" rx="105" ry="28" fill="#fff" stroke="#333" stroke-width="1.8" />
+            <text x="310" y="1132" text-anchor="middle" font-size="11" font-weight="bold">13. View Health</text>
+            <text x="310" y="1145" text-anchor="middle" font-size="11" font-weight="bold">Tips &amp; Reports</text>
+
+            <!-- ── Data Stores (x=595) ── -->
+            <rect x="595" y="41" width="185" height="28" fill="#eaeaea" stroke="#333" stroke-width="1.5" />
+            <rect x="595" y="41" width="28" height="28" fill="#ddd" stroke="#333" stroke-width="1.5" />
+            <text x="609" y="60" text-anchor="middle" font-size="10" font-weight="bold">D1</text>
+            <text x="702" y="60" text-anchor="middle" font-size="11" font-weight="bold">Users</text>
+
+            <rect x="595" y="131" width="185" height="28" fill="#eaeaea" stroke="#333" stroke-width="1.5" />
+            <rect x="595" y="131" width="28" height="28" fill="#ddd" stroke="#333" stroke-width="1.5" />
+            <text x="609" y="150" text-anchor="middle" font-size="10" font-weight="bold">D2</text>
+            <text x="702" y="150" text-anchor="middle" font-size="11" font-weight="bold">Medicines</text>
+
+            <rect x="595" y="221" width="185" height="28" fill="#eaeaea" stroke="#333" stroke-width="1.5" />
+            <rect x="595" y="221" width="28" height="28" fill="#ddd" stroke="#333" stroke-width="1.5" />
+            <text x="609" y="240" text-anchor="middle" font-size="10" font-weight="bold">D3</text>
+            <text x="702" y="240" text-anchor="middle" font-size="11" font-weight="bold">Medicines</text>
+
+            <rect x="595" y="311" width="185" height="28" fill="#eaeaea" stroke="#333" stroke-width="1.5" />
+            <rect x="595" y="311" width="28" height="28" fill="#ddd" stroke="#333" stroke-width="1.5" />
+            <text x="609" y="330" text-anchor="middle" font-size="10" font-weight="bold">D4</text>
+            <text x="702" y="330" text-anchor="middle" font-size="11" font-weight="bold">Med. Schedules</text>
+
+            <rect x="595" y="401" width="185" height="28" fill="#eaeaea" stroke="#333" stroke-width="1.5" />
+            <rect x="595" y="401" width="28" height="28" fill="#ddd" stroke="#333" stroke-width="1.5" />
+            <text x="609" y="420" text-anchor="middle" font-size="10" font-weight="bold">D5</text>
+            <text x="702" y="420" text-anchor="middle" font-size="11" font-weight="bold">Health Records</text>
+
+            <rect x="595" y="491" width="185" height="28" fill="#eaeaea" stroke="#333" stroke-width="1.5" />
+            <rect x="595" y="491" width="28" height="28" fill="#ddd" stroke="#333" stroke-width="1.5" />
+            <text x="609" y="510" text-anchor="middle" font-size="10" font-weight="bold">D6</text>
+            <text x="702" y="510" text-anchor="middle" font-size="11" font-weight="bold">Health Records</text>
+
+            <rect x="595" y="581" width="185" height="28" fill="#eaeaea" stroke="#333" stroke-width="1.5" />
+            <rect x="595" y="581" width="28" height="28" fill="#ddd" stroke="#333" stroke-width="1.5" />
+            <text x="609" y="600" text-anchor="middle" font-size="10" font-weight="bold">D7</text>
+            <text x="702" y="600" text-anchor="middle" font-size="11" font-weight="bold">AI / Gemini API</text>
+
+            <rect x="595" y="671" width="185" height="28" fill="#eaeaea" stroke="#333" stroke-width="1.5" />
+            <rect x="595" y="671" width="28" height="28" fill="#ddd" stroke="#333" stroke-width="1.5" />
+            <text x="609" y="690" text-anchor="middle" font-size="10" font-weight="bold">D8</text>
+            <text x="702" y="690" text-anchor="middle" font-size="11" font-weight="bold">AI / Gemini API</text>
+
+            <rect x="595" y="761" width="185" height="28" fill="#eaeaea" stroke="#333" stroke-width="1.5" />
+            <rect x="595" y="761" width="28" height="28" fill="#ddd" stroke="#333" stroke-width="1.5" />
+            <text x="609" y="780" text-anchor="middle" font-size="10" font-weight="bold">D9</text>
+            <text x="702" y="780" text-anchor="middle" font-size="11" font-weight="bold">Donations</text>
+
+            <rect x="595" y="851" width="185" height="28" fill="#eaeaea" stroke="#333" stroke-width="1.5" />
+            <rect x="595" y="851" width="28" height="28" fill="#ddd" stroke="#333" stroke-width="1.5" />
+            <text x="609" y="870" text-anchor="middle" font-size="10" font-weight="bold">D10</text>
+            <text x="702" y="870" text-anchor="middle" font-size="11" font-weight="bold">Donations</text>
+
+            <rect x="595" y="941" width="185" height="28" fill="#eaeaea" stroke="#333" stroke-width="1.5" />
+            <rect x="595" y="941" width="28" height="28" fill="#ddd" stroke="#333" stroke-width="1.5" />
+            <text x="609" y="960" text-anchor="middle" font-size="10" font-weight="bold">D11</text>
+            <text x="702" y="960" text-anchor="middle" font-size="11" font-weight="bold">Family Accounts</text>
+
+            <rect x="595" y="1031" width="185" height="28" fill="#eaeaea" stroke="#333" stroke-width="1.5" />
+            <rect x="595" y="1031" width="28" height="28" fill="#ddd" stroke="#333" stroke-width="1.5" />
+            <text x="609" y="1050" text-anchor="middle" font-size="10" font-weight="bold">D12</text>
+            <text x="702" y="1050" text-anchor="middle" font-size="11" font-weight="bold">AI / Gemini API</text>
+
+            <rect x="595" y="1121" width="185" height="28" fill="#eaeaea" stroke="#333" stroke-width="1.5" />
+            <rect x="595" y="1121" width="28" height="28" fill="#ddd" stroke="#333" stroke-width="1.5" />
+            <text x="609" y="1140" text-anchor="middle" font-size="10" font-weight="bold">D13</text>
+            <text x="702" y="1140" text-anchor="middle" font-size="11" font-weight="bold">Health Records</text>
+
+            <!-- Actor → Processes (fan out from right edge of actor) -->
+            <line x1="130" y1="572" x2="205" y2="57" stroke="#333" stroke-width="1.3" marker-end="url(#a2)" />
+            <line x1="130" y1="576" x2="205" y2="143" stroke="#333" stroke-width="1.3" marker-end="url(#a2)" />
+            <line x1="130" y1="580" x2="205" y2="233" stroke="#333" stroke-width="1.3" marker-end="url(#a2)" />
+            <line x1="130" y1="584" x2="205" y2="323" stroke="#333" stroke-width="1.3" marker-end="url(#a2)" />
+            <line x1="130" y1="588" x2="205" y2="413" stroke="#333" stroke-width="1.3" marker-end="url(#a2)" />
+            <line x1="130" y1="592" x2="205" y2="503" stroke="#333" stroke-width="1.3" marker-end="url(#a2)" />
+            <line x1="130" y1="596" x2="205" y2="593" stroke="#333" stroke-width="1.3" marker-end="url(#a2)" />
+            <line x1="130" y1="600" x2="205" y2="683" stroke="#333" stroke-width="1.3" marker-end="url(#a2)" />
+            <line x1="130" y1="604" x2="205" y2="773" stroke="#333" stroke-width="1.3" marker-end="url(#a2)" />
+            <line x1="130" y1="608" x2="205" y2="863" stroke="#333" stroke-width="1.3" marker-end="url(#a2)" />
+            <line x1="130" y1="612" x2="205" y2="953" stroke="#333" stroke-width="1.3" marker-end="url(#a2)" />
+            <line x1="130" y1="616" x2="205" y2="1043" stroke="#333" stroke-width="1.3" marker-end="url(#a2)" />
+            <line x1="130" y1="620" x2="205" y2="1133" stroke="#333" stroke-width="1.3" marker-end="url(#a2)" />
+            <!-- Login response -->
+            <line x1="205" y1="50" x2="130" y2="568" stroke="#333" stroke-width="1.3" stroke-dasharray="5,3"
+                marker-end="url(#a2)" />
+
+            <!-- Process → Data Store and returns -->
+            <line x1="415" y1="50" x2="595" y2="54" stroke="#333" stroke-width="1.3" marker-end="url(#a2)" />
+            <line x1="595" y1="63" x2="415" y2="60" stroke="#333" stroke-width="1.3" stroke-dasharray="5,3"
+                marker-end="url(#a2)" />
+
+            <line x1="415" y1="140" x2="595" y2="144" stroke="#333" stroke-width="1.3" marker-end="url(#a2)" />
+            <line x1="595" y1="154" x2="415" y2="150" stroke="#333" stroke-width="1.3" stroke-dasharray="5,3"
+                marker-end="url(#a2)" />
+
+            <line x1="415" y1="230" x2="595" y2="234" stroke="#333" stroke-width="1.3" marker-end="url(#a2)" />
+            <line x1="595" y1="244" x2="415" y2="240" stroke="#333" stroke-width="1.3" stroke-dasharray="5,3"
+                marker-end="url(#a2)" />
+
+            <line x1="415" y1="320" x2="595" y2="324" stroke="#333" stroke-width="1.3" marker-end="url(#a2)" />
+            <line x1="595" y1="334" x2="415" y2="330" stroke="#333" stroke-width="1.3" stroke-dasharray="5,3"
+                marker-end="url(#a2)" />
+
+            <line x1="415" y1="410" x2="595" y2="414" stroke="#333" stroke-width="1.3" marker-end="url(#a2)" />
+            <line x1="595" y1="424" x2="415" y2="420" stroke="#333" stroke-width="1.3" stroke-dasharray="5,3"
+                marker-end="url(#a2)" />
+
+            <line x1="415" y1="500" x2="595" y2="504" stroke="#333" stroke-width="1.3" marker-end="url(#a2)" />
+            <line x1="595" y1="514" x2="415" y2="510" stroke="#333" stroke-width="1.3" stroke-dasharray="5,3"
+                marker-end="url(#a2)" />
+
+            <line x1="415" y1="590" x2="595" y2="594" stroke="#333" stroke-width="1.3" marker-end="url(#a2)" />
+            <line x1="595" y1="604" x2="415" y2="600" stroke="#333" stroke-width="1.3" stroke-dasharray="5,3"
+                marker-end="url(#a2)" />
+
+            <line x1="415" y1="680" x2="595" y2="684" stroke="#333" stroke-width="1.3" marker-end="url(#a2)" />
+            <line x1="595" y1="694" x2="415" y2="690" stroke="#333" stroke-width="1.3" stroke-dasharray="5,3"
+                marker-end="url(#a2)" />
+
+            <line x1="415" y1="770" x2="595" y2="774" stroke="#333" stroke-width="1.3" marker-end="url(#a2)" />
+            <line x1="595" y1="784" x2="415" y2="780" stroke="#333" stroke-width="1.3" stroke-dasharray="5,3"
+                marker-end="url(#a2)" />
+
+            <line x1="415" y1="860" x2="595" y2="864" stroke="#333" stroke-width="1.3" marker-end="url(#a2)" />
+            <line x1="595" y1="874" x2="415" y2="870" stroke="#333" stroke-width="1.3" stroke-dasharray="5,3"
+                marker-end="url(#a2)" />
+
+            <line x1="415" y1="950" x2="595" y2="954" stroke="#333" stroke-width="1.3" marker-end="url(#a2)" />
+            <line x1="595" y1="964" x2="415" y2="960" stroke="#333" stroke-width="1.3" stroke-dasharray="5,3"
+                marker-end="url(#a2)" />
+
+            <line x1="415" y1="1040" x2="595" y2="1044" stroke="#333" stroke-width="1.3" marker-end="url(#a2)" />
+            <line x1="595" y1="1054" x2="415" y2="1050" stroke="#333" stroke-width="1.3" stroke-dasharray="5,3"
+                marker-end="url(#a2)" />
+
+            <line x1="415" y1="1130" x2="595" y2="1134" stroke="#333" stroke-width="1.3" marker-end="url(#a2)" />
+            <line x1="595" y1="1144" x2="415" y2="1140" stroke="#333" stroke-width="1.3" stroke-dasharray="5,3"
+                marker-end="url(#a2)" />
+
+            <!-- Actor→Process labels (abbreviated) -->
+            <text x="147" y="285" font-size="8" fill="#444" transform="rotate(-50,147,285)">Credentials</text>
+            <text x="152" y="358" font-size="8" fill="#444" transform="rotate(-35,152,358)">View Request</text>
+            <text x="155" y="420" font-size="8" fill="#444" transform="rotate(-20,155,420)">Medicine Data</text>
+            <text x="156" y="472" font-size="8" fill="#444" transform="rotate(-8,156,472)">Schedule Data</text>
+            <text x="156" y="524" font-size="8" fill="#444" transform="rotate(5,156,524)">Health Data</text>
+            <text x="155" y="576" font-size="8" fill="#444" transform="rotate(15,155,576)">Query</text>
+            <text x="153" y="625" font-size="8" fill="#444" transform="rotate(22,153,625)">Medicine List</text>
+            <text x="151" y="672" font-size="8" fill="#444" transform="rotate(30,151,672)">Symptoms</text>
+            <text x="147" y="718" font-size="8" fill="#444" transform="rotate(38,147,718)">Request Details</text>
+            <text x="143" y="762" font-size="8" fill="#444" transform="rotate(44,143,762)">Donation ID</text>
+            <text x="139" y="806" font-size="8" fill="#444" transform="rotate(50,139,806)">Family Code</text>
+            <text x="134" y="850" font-size="8" fill="#444" transform="rotate(56,134,850)">AI Query</text>
+            <text x="128" y="893" font-size="8" fill="#444" transform="rotate(62,128,893)">Category</text>
+
+            <!-- Process→Store labels -->
+            <text x="432" y="46" font-size="8" fill="#555">Auth / Store User</text>
+            <text x="432" y="136" font-size="8" fill="#555">Fetch Medicines</text>
+            <text x="432" y="226" font-size="8" fill="#555">Save Medicine</text>
+            <text x="432" y="316" font-size="8" fill="#555">Save Schedule</text>
+            <text x="432" y="406" font-size="8" fill="#555">Save Record</text>
+            <text x="432" y="496" font-size="8" fill="#555">Read Records</text>
+            <text x="432" y="586" font-size="8" fill="#555">Send Medicines</text>
+            <text x="432" y="676" font-size="8" fill="#555">Send Symptoms</text>
+            <text x="432" y="766" font-size="8" fill="#555">Save Donation</text>
+            <text x="432" y="856" font-size="8" fill="#555">Fetch History</text>
+            <text x="432" y="946" font-size="8" fill="#555">Link Accounts</text>
+            <text x="432" y="1036" font-size="8" fill="#555">Send Query</text>
+            <text x="432" y="1126" font-size="8" fill="#555">Read Records</text>
+        </svg>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ LEVEL 1.3 NGO ══ -->
+    <div class="sec">
+        <div class="stitle">LEVEL 1.3 : NGO</div>
+        <svg xmlns="http://www.w3.org/2000/svg" width="820" height="490" viewBox="0 0 820 490">
+            <defs>
+                <marker id="a3" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                    <polygon points="0 0,9 3.5,0 7" fill="#222" />
+                </marker>
+            </defs>
+            <rect x="6" y="6" width="808" height="478" fill="none" stroke="#aaa" stroke-width="1"
+                stroke-dasharray="5,4" />
+
+            <!-- Actor -->
+            <rect x="20" y="200" width="110" height="48" fill="#fff" stroke="#333" stroke-width="2" rx="3" />
+            <text x="75" y="229" text-anchor="middle" font-size="14" font-weight="bold">NGO</text>
+
+            <!-- Processes -->
+            <ellipse cx="310" cy="55" rx="105" ry="28" fill="#fff" stroke="#333" stroke-width="1.8" />
+            <text x="310" y="52" text-anchor="middle" font-size="11" font-weight="bold">1. Login /</text>
+            <text x="310" y="65" text-anchor="middle" font-size="11" font-weight="bold">Register</text>
+
+            <ellipse cx="310" cy="150" rx="105" ry="28" fill="#fff" stroke="#333" stroke-width="1.8" />
+            <text x="310" y="147" text-anchor="middle" font-size="11" font-weight="bold">2. Manage NGO</text>
+            <text x="310" y="160" text-anchor="middle" font-size="11" font-weight="bold">Profile</text>
+
+            <ellipse cx="310" cy="245" rx="105" ry="28" fill="#fff" stroke="#333" stroke-width="1.8" />
+            <text x="310" y="242" text-anchor="middle" font-size="11" font-weight="bold">3. View Donation</text>
+            <text x="310" y="255" text-anchor="middle" font-size="11" font-weight="bold">Requests</text>
+
+            <ellipse cx="310" cy="340" rx="105" ry="28" fill="#fff" stroke="#333" stroke-width="1.8" />
+            <text x="310" y="337" text-anchor="middle" font-size="11" font-weight="bold">4. Accept / Reject</text>
+            <text x="310" y="350" text-anchor="middle" font-size="11" font-weight="bold">Donation</text>
+
+            <ellipse cx="310" cy="435" rx="105" ry="28" fill="#fff" stroke="#333" stroke-width="1.8" />
+            <text x="310" y="432" text-anchor="middle" font-size="11" font-weight="bold">5. Update Donation</text>
+            <text x="310" y="445" text-anchor="middle" font-size="11" font-weight="bold">Status &amp; Notify</text>
+
+            <!-- Data Stores -->
+            <rect x="595" y="41" width="180" height="28" fill="#eaeaea" stroke="#333" stroke-width="1.5" />
+            <rect x="595" y="41" width="28" height="28" fill="#ddd" stroke="#333" stroke-width="1.5" />
+            <text x="609" y="60" text-anchor="middle" font-size="10" font-weight="bold">D1</text>
+            <text x="700" y="60" text-anchor="middle" font-size="11" font-weight="bold">Users / NGO</text>
+
+            <rect x="595" y="136" width="180" height="28" fill="#eaeaea" stroke="#333" stroke-width="1.5" />
+            <rect x="595" y="136" width="28" height="28" fill="#ddd" stroke="#333" stroke-width="1.5" />
+            <text x="609" y="155" text-anchor="middle" font-size="10" font-weight="bold">D2</text>
+            <text x="700" y="155" text-anchor="middle" font-size="11" font-weight="bold">NGO Profile</text>
+
+            <rect x="595" y="231" width="180" height="28" fill="#eaeaea" stroke="#333" stroke-width="1.5" />
+            <rect x="595" y="231" width="28" height="28" fill="#ddd" stroke="#333" stroke-width="1.5" />
+            <text x="609" y="250" text-anchor="middle" font-size="10" font-weight="bold">D3</text>
+            <text x="700" y="250" text-anchor="middle" font-size="11" font-weight="bold">Donations</text>
+
+            <rect x="595" y="326" width="180" height="28" fill="#eaeaea" stroke="#333" stroke-width="1.5" />
+            <rect x="595" y="326" width="28" height="28" fill="#ddd" stroke="#333" stroke-width="1.5" />
+            <text x="609" y="345" text-anchor="middle" font-size="10" font-weight="bold">D4</text>
+            <text x="700" y="345" text-anchor="middle" font-size="11" font-weight="bold">Donation Status</text>
+
+            <rect x="595" y="421" width="180" height="28" fill="#eaeaea" stroke="#333" stroke-width="1.5" />
+            <rect x="595" y="421" width="28" height="28" fill="#ddd" stroke="#333" stroke-width="1.5" />
+            <text x="609" y="440" text-anchor="middle" font-size="10" font-weight="bold">D5</text>
+            <text x="700" y="440" text-anchor="middle" font-size="11" font-weight="bold">Notifications</text>
+
+            <!-- Actor → Processes -->
+            <line x1="130" y1="210" x2="205" y2="57" stroke="#333" stroke-width="1.3" marker-end="url(#a3)" />
+            <line x1="130" y1="216" x2="205" y2="148" stroke="#333" stroke-width="1.3" marker-end="url(#a3)" />
+            <line x1="130" y1="222" x2="205" y2="243" stroke="#333" stroke-width="1.3" marker-end="url(#a3)" />
+            <line x1="130" y1="232" x2="205" y2="338" stroke="#333" stroke-width="1.3" marker-end="url(#a3)" />
+            <line x1="130" y1="243" x2="205" y2="433" stroke="#333" stroke-width="1.3" marker-end="url(#a3)" />
+            <line x1="205" y1="50" x2="130" y2="206" stroke="#333" stroke-width="1.3" stroke-dasharray="5,3"
+                marker-end="url(#a3)" />
+
+            <!-- Process → Store -->
+            <line x1="415" y1="50" x2="595" y2="54" stroke="#333" stroke-width="1.3" marker-end="url(#a3)" />
+            <line x1="595" y1="63" x2="415" y2="60" stroke="#333" stroke-width="1.3" stroke-dasharray="5,3"
+                marker-end="url(#a3)" />
+            <line x1="415" y1="145" x2="595" y2="149" stroke="#333" stroke-width="1.3" marker-end="url(#a3)" />
+            <line x1="595" y1="159" x2="415" y2="155" stroke="#333" stroke-width="1.3" stroke-dasharray="5,3"
+                marker-end="url(#a3)" />
+            <line x1="415" y1="240" x2="595" y2="244" stroke="#333" stroke-width="1.3" marker-end="url(#a3)" />
+            <line x1="595" y1="254" x2="415" y2="250" stroke="#333" stroke-width="1.3" stroke-dasharray="5,3"
+                marker-end="url(#a3)" />
+            <line x1="415" y1="335" x2="595" y2="339" stroke="#333" stroke-width="1.3" marker-end="url(#a3)" />
+            <line x1="595" y1="349" x2="415" y2="345" stroke="#333" stroke-width="1.3" stroke-dasharray="5,3"
+                marker-end="url(#a3)" />
+            <line x1="415" y1="430" x2="595" y2="434" stroke="#333" stroke-width="1.3" marker-end="url(#a3)" />
+            <line x1="595" y1="444" x2="415" y2="440" stroke="#333" stroke-width="1.3" stroke-dasharray="5,3"
+                marker-end="url(#a3)" />
+
+            <!-- Labels actor side -->
+            <text x="148" y="116" font-size="8.5" fill="#444" transform="rotate(-38,148,116)">Credentials</text>
+            <text x="153" y="181" font-size="8.5" fill="#444" transform="rotate(-14,153,181)">Profile Data</text>
+            <text x="156" y="228" font-size="8.5" fill="#444" transform="rotate(6,156,228)">View Request</text>
+            <text x="154" y="290" font-size="8.5" fill="#444" transform="rotate(24,154,290)">Decision</text>
+            <text x="150" y="348" font-size="8.5" fill="#444" transform="rotate(38,150,348)">Status Update</text>
+            <!-- Labels store side -->
+            <text x="432" y="46" font-size="8.5" fill="#555">Auth / Store NGO</text>
+            <text x="432" y="141" font-size="8.5" fill="#555">Save Profile</text>
+            <text x="432" y="236" font-size="8.5" fill="#555">Fetch Donations</text>
+            <text x="432" y="331" font-size="8.5" fill="#555">Update Status</text>
+            <text x="432" y="426" font-size="8.5" fill="#555">Send Notification</text>
+        </svg>
+    </div>
+
+    <!-- LEGEND -->
+    <div class="legend">
+        <div class="li">
+            <div class="lbox"></div><span>External Entity</span>
+        </div>
+        <div class="li">
+            <div class="lell"></div><span>Process</span>
+        </div>
+        <div class="li">
+            <div class="lds"></div><span>Data Store</span>
+        </div>
+        <div class="li">
+            <svg width="42" height="14">
+                <defs>
+                    <marker id="ll1" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+                        <polygon points="0 0,8 3,0 6" fill="#333" />
+                    </marker>
+                </defs>
+                <line x1="0" y1="7" x2="34" y2="7" stroke="#333" stroke-width="1.4" marker-end="url(#ll1)" />
+            </svg>
+            <span>Input Flow</span>
+        </div>
+        <div class="li">
+            <svg width="42" height="14">
+                <defs>
+                    <marker id="ll2" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+                        <polygon points="0 0,8 3,0 6" fill="#666" />
+                    </marker>
+                </defs>
+                <line x1="0" y1="7" x2="34" y2="7" stroke="#666" stroke-width="1.4" stroke-dasharray="5,3"
+                    marker-end="url(#ll2)" />
+            </svg>
+            <span>Output Flow</span>
+        </div>
+    </div>
+    <p style="margin-top:16px;font-size:11px;color:#888;text-align:center;">
+        Mediloop Health Management System &nbsp;|&nbsp; Level 1 Data Flow Diagrams
+    </p>
+</body>
+
+</html>

@@ -5,6 +5,7 @@ import { UserRole } from '../../types';
 import toast from 'react-hot-toast';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../config/firebase';
+import { db } from '../../db';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -15,32 +16,36 @@ export default function Login() {
     role: 'patient' as 'patient' | 'admin' | 'ngo' | 'hospital',
   });
 
-  const handleReset = async () => {
-    if (window.confirm('This will clear all local data (users, medicines, etc). Are you sure?')) {
-      await db.delete();
-      await db.open();
-      window.location.reload();
-      toast.success('Local data cleared');
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
+      // 1. Check local DB first to avoid unnecessary Firebase 400 errors and validate role
+      const existingUser = await db.users
+        .where('email')
+        .equals(formData.email)
+        .first();
+
+      if (!existingUser) {
+        toast.error('User not found. Please register.');
+        return;
+      }
+
+      if (existingUser.role !== formData.role) {
+        toast.error('Invalid role selected for this account.');
+        return;
+      }
+
+      // 2. Validate password with Firebase
       await signInWithEmailAndPassword(auth, formData.email, formData.password);
+
       toast.success('Login successful!');
       navigate('/dashboard');
     } catch (error: any) {
-      console.error('Login error:', error);
       let errorMessage = 'Login failed. Please try again.';
       if (error.code === 'auth/invalid-credential') {
         errorMessage = 'Invalid email or password. If this is your first time, please Sign Up.';
       } else if (error.code === 'auth/user-not-found') {
-        // Create new user for demo if not found in Firebase (optional fallback or mirroring logic)
-        // For strict auth, we should show error. 
-        // But the previous code had auto-creation. 
-        // Let's stick to strict login for "Login" page.
         errorMessage = 'User not found. Please register.';
       }
       toast.error(errorMessage);
@@ -112,15 +117,6 @@ export default function Login() {
         </Link>
       </p>
 
-      <div className="mt-6 text-center">
-        <button
-          type="button"
-          onClick={handleReset}
-          className="text-xs text-red-500 hover:text-red-700 underline"
-        >
-          Reset Local Data (Debug)
-        </button>
-      </div>
     </div>
   );
 }
