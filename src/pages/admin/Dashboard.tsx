@@ -1,22 +1,24 @@
 import { useEffect, useState } from 'react';
-import { 
-  Users, 
-  Pill, 
-  Heart, 
-  TrendingUp, 
-  AlertCircle, 
-  CheckCircle, 
-  Clock, 
+import {
+  Users,
+  Pill,
+  Heart,
+  TrendingUp,
+  AlertCircle,
+  CheckCircle,
+  Clock,
   BarChart3,
   Settings,
   Bell,
   Database,
   Shield,
-  Activity
+  Activity,
+  RefreshCw
 } from 'lucide-react';
-import { db } from '../../db';
 import { User, Medicine, Donation, AppNotification } from '../../types';
 import { formatDate } from '../../utils/helpers';
+import { API_URL } from '../../config/api';
+import { useNavigate } from 'react-router-dom';
 
 interface DashboardStats {
   totalUsers: number;
@@ -30,6 +32,7 @@ interface DashboardStats {
 }
 
 export default function AdminDashboard() {
+  const navigate = useNavigate();
   const [stats, setStats] = useState<DashboardStats>({
     totalUsers: 0,
     totalMedicines: 0,
@@ -42,8 +45,8 @@ export default function AdminDashboard() {
   });
   const [recentUsers, setRecentUsers] = useState<User[]>([]);
   const [recentDonations, setRecentDonations] = useState<Donation[]>([]);
-  const [systemNotifications, setSystemNotifications] = useState<AppNotification[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadDashboardData();
@@ -52,34 +55,40 @@ export default function AdminDashboard() {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
-      
-      // Load all users
-      const users = await db.users.toArray();
-      const medicines = await db.medicines.toArray();
-      const donations = await db.donations.toArray();
-      const notifications = await db.notifications.where('type').equals('system').toArray();
+      setError(null);
+
+      // Fetch all collections from MongoDB backend (source of truth for all users)
+      const [usersRes, medicinesRes, donationsRes] = await Promise.all([
+        fetch(`${API_URL}/api/sync/users`),
+        fetch(`${API_URL}/api/sync/medicines`),
+        fetch(`${API_URL}/api/sync/donations`),
+      ]);
+
+      const users: User[] = usersRes.ok ? await usersRes.json() : [];
+      const medicines: Medicine[] = medicinesRes.ok ? await medicinesRes.json() : [];
+      const donations: Donation[] = donationsRes.ok ? await donationsRes.json() : [];
+
+      // Normalise date strings → Date objects
+      const toDate = (v: any) => v ? new Date(v) : new Date(0);
+      const normUsers = users.map(u => ({ ...u, createdAt: toDate(u.createdAt), updatedAt: toDate(u.updatedAt) }));
+      const normDonations = donations.map(d => ({ ...d, createdAt: toDate(d.createdAt), updatedAt: toDate(d.updatedAt) }));
 
       // Calculate stats
-      const totalUsers = users.length;
+      const totalUsers = normUsers.length;
       const totalMedicines = medicines.length;
-      const totalDonations = donations.length;
-      const pendingDonations = donations.filter(d => d.status === 'pending').length;
-      const completedDonations = donations.filter(d => d.status === 'completed').length;
-      
-      // Active users (users with activity in last 7 days)
+      const totalDonations = normDonations.length;
+      const pendingDonations = normDonations.filter(d => d.status === 'pending').length;
+      const completedDonations = normDonations.filter(d => d.status === 'completed').length;
+
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-      const activeUsers = users.filter(u => u.createdAt > sevenDaysAgo).length;
+      const activeUsers = normUsers.filter(u => u.createdAt > sevenDaysAgo).length;
 
-      // System health based on various factors
       let systemHealth: 'good' | 'warning' | 'critical' = 'good';
       if (pendingDonations > 50) systemHealth = 'warning';
-      if (pendingDonations > 100 || totalUsers === 0) systemHealth = 'critical';
-
-      // Recent activity (notifications in last 24 hours)
-      const oneDayAgo = new Date();
-      oneDayAgo.setDate(oneDayAgo.getDate() - 1);
-      const recentActivity = notifications.filter(n => n.createdAt > oneDayAgo).length;
+      if (pendingDonations > 100) systemHealth = 'critical';
+      // Only flag critical if truly 0 users AND backend is reachable (we got a response)
+      if (totalUsers === 0 && usersRes.ok) systemHealth = 'warning';
 
       setStats({
         totalUsers,
@@ -89,20 +98,15 @@ export default function AdminDashboard() {
         completedDonations,
         activeUsers,
         systemHealth,
-        recentActivity,
+        recentActivity: 0,
       });
 
-      // Get recent users (last 5)
-      setRecentUsers(users.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()).slice(0, 5));
-      
-      // Get recent donations (last 5)
-      setRecentDonations(donations.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()).slice(0, 5));
-      
-      // Get system notifications
-      setSystemNotifications(notifications.slice(0, 5));
+      setRecentUsers(normUsers.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()).slice(0, 5));
+      setRecentDonations(normDonations.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()).slice(0, 5));
 
-    } catch (error) {
-      console.error('Error loading dashboard data:', error);
+    } catch (err) {
+      console.error('Error loading dashboard data:', err);
+      setError('Failed to connect to the backend. Make sure the server is running.');
     } finally {
       setLoading(false);
     }
@@ -134,39 +138,57 @@ export default function AdminDashboard() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 space-y-4">
+        <AlertCircle className="w-12 h-12 text-red-500" />
+        <p className="text-red-600 dark:text-red-400 text-center max-w-md">{error}</p>
+        <button onClick={loadDashboardData} className="btn btn-primary">
+          <RefreshCw size={18} />
+          <span>Retry</span>
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 fade-in">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          Admin Dashboard
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          System overview and management controls
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            Admin Dashboard
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            System overview and management controls
+          </p>
+        </div>
+        <button onClick={loadDashboardData} className="btn btn-secondary">
+          <RefreshCw size={18} />
+          <span>Refresh</span>
+        </button>
       </div>
 
       {/* System Health Alert */}
       {stats.systemHealth !== 'good' && (
-        <div className={`p-4 rounded-lg border-l-4 ${
-          stats.systemHealth === 'critical' 
-            ? 'bg-red-50 dark:bg-red-900/20 border-red-500' 
+        <div className={`p-4 rounded-lg border-l-4 ${stats.systemHealth === 'critical'
+            ? 'bg-red-50 dark:bg-red-900/20 border-red-500'
             : 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-500'
-        }`}>
+          }`}>
           <div className="flex items-center">
             {getSystemHealthIcon(stats.systemHealth)}
             <div className="ml-3">
-              <h3 className={`text-sm font-medium ${
-                stats.systemHealth === 'critical' ? 'text-red-800 dark:text-red-200' : 'text-yellow-800 dark:text-yellow-200'
-              }`}>
+              <h3 className={`text-sm font-medium ${stats.systemHealth === 'critical' ? 'text-red-800 dark:text-red-200' : 'text-yellow-800 dark:text-yellow-200'
+                }`}>
                 {stats.systemHealth === 'critical' ? 'System Critical' : 'System Warning'}
               </h3>
-              <p className={`text-sm ${
-                stats.systemHealth === 'critical' ? 'text-red-700 dark:text-red-300' : 'text-yellow-700 dark:text-yellow-300'
-              }`}>
-                {stats.systemHealth === 'critical' 
-                  ? 'High number of pending donations or system issues detected'
-                  : 'System performance requires attention'
+              <p className={`text-sm ${stats.systemHealth === 'critical' ? 'text-red-700 dark:text-red-300' : 'text-yellow-700 dark:text-yellow-300'
+                }`}>
+                {stats.systemHealth === 'critical'
+                  ? 'High number of pending donations detected'
+                  : stats.totalUsers === 0
+                    ? 'No users have registered yet — data will appear once users sync'
+                    : 'System performance requires attention'
                 }
               </p>
             </div>
@@ -296,7 +318,10 @@ export default function AdminDashboard() {
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
               Recent Users
             </h2>
-            <button className="text-sm text-primary-600 hover:text-primary-700 font-medium">
+            <button
+              onClick={() => navigate('/users')}
+              className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+            >
               View All
             </button>
           </div>
@@ -330,7 +355,7 @@ export default function AdminDashboard() {
               ))
             ) : (
               <p className="text-center text-gray-500 dark:text-gray-400 py-8">
-                No users found
+                No users found — data appears once patients sync their accounts
               </p>
             )}
           </div>
@@ -376,7 +401,7 @@ export default function AdminDashboard() {
               ))
             ) : (
               <p className="text-center text-gray-500 dark:text-gray-400 py-8">
-                No donations found
+                No donations found yet
               </p>
             )}
           </div>
@@ -389,64 +414,24 @@ export default function AdminDashboard() {
           Quick Actions
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <button className="btn btn-primary">
+          <button className="btn btn-primary" onClick={() => navigate('/analytics')}>
             <BarChart3 size={18} />
             <span>View Analytics</span>
           </button>
-          <button className="btn btn-secondary">
+          <button className="btn btn-secondary" onClick={() => navigate('/users')}>
             <Users size={18} />
             <span>Manage Users</span>
           </button>
-          <button className="btn btn-secondary">
+          <button className="btn btn-secondary" onClick={() => navigate('/system')}>
             <Settings size={18} />
             <span>System Settings</span>
           </button>
-          <button className="btn btn-secondary">
+          <button className="btn btn-secondary" onClick={() => navigate('/logs')}>
             <Database size={18} />
-            <span>Database Tools</span>
+            <span>System Logs</span>
           </button>
         </div>
       </div>
-
-      {/* System Notifications */}
-      {systemNotifications.length > 0 && (
-        <div className="card">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-              System Notifications
-            </h2>
-            <button className="text-sm text-primary-600 hover:text-primary-700 font-medium">
-              View All
-            </button>
-          </div>
-
-          <div className="space-y-3">
-            {systemNotifications.map((notification) => (
-              <div
-                key={notification.id}
-                className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
-              >
-                <div className="flex items-center space-x-3">
-                  <Bell className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-white">
-                      {notification.title}
-                    </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {notification.message}
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {formatDate(notification.createdAt)}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

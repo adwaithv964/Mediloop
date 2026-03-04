@@ -54,7 +54,30 @@ syncRouter.post('/', async (req, res) => {
     }
 });
 
-// Get all data (for initial load)
+/**
+ * @route   GET /api/sync/user-by-email
+ * @desc    Fetch full user profile from MongoDB by email (used by auth store instead of Dexie)
+ * @access  Public
+ * NOTE: Must be defined BEFORE /:collection so Express doesn't swallow it as a wildcard.
+ */
+syncRouter.get('/user-by-email', async (req, res) => {
+    try {
+        const { email } = req.query;
+        if (!email) {
+            return res.status(400).json({ error: 'email query param required' });
+        }
+        const user = await User.findOne({ email: String(email).toLowerCase() });
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        res.json(user);
+    } catch (error) {
+        console.error('user-by-email error:', error);
+        res.status(500).json({ error: 'Fetch failed' });
+    }
+});
+
+// Get all data for a collection (for admin panel)
 syncRouter.get('/:collection', async (req, res) => {
     try {
         const { collection } = req.params;

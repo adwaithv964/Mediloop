@@ -436,39 +436,58 @@ export default function DonationRequests() {
                   {selectedDonation.medicines.map((medicine, index) => (
                     <div key={index} className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                       <div className="flex items-center justify-between">
-                        <div>
+                        <div className="flex-1">
                           <h4 className="font-medium text-gray-900 dark:text-white">
                             {medicine.name}
                           </h4>
-                          <div className="flex items-center mt-1">
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mr-2">
-                              Quantity:
+                          {/* Requested quantity reference */}
+                          {medicine.requestedQuantity && medicine.requestedQuantity !== medicine.quantity && (
+                            <p className="text-xs text-blue-600 dark:text-blue-400 mt-0.5">
+                              Patient originally requested: {medicine.requestedQuantity}
                             </p>
-                            {selectedDonation.status === 'pending' ? (
-                              <input
-                                type="number"
-                                min="0"
-                                className="input py-0 px-2 h-7 w-20 text-sm"
-                                value={medicine.quantity === 0 ? '' : medicine.quantity}
-                                onChange={(e) => {
-                                  const val = e.target.value;
-                                  const newQty = val === '' ? 0 : parseInt(val);
-                                  const updatedDonation = { ...selectedDonation };
-                                  if (updatedDonation.medicines && updatedDonation.medicines[index]) {
-                                    updatedDonation.medicines[index].quantity = isNaN(newQty) ? 0 : newQty;
-                                    setSelectedDonation(updatedDonation);
-                                  }
-                                }}
-                              />
-                            ) : (
-                              <span className="text-sm font-medium">{medicine.quantity}</span>
+                          )}
+                          <div className="flex items-center mt-2 flex-wrap gap-x-4 gap-y-1">
+                            <div className="flex items-center space-x-2">
+                              <p className="text-sm text-gray-500 dark:text-gray-400">
+                                {selectedDonation.status === 'pending' ? 'Confirm qty:' : 'Quantity:'}
+                              </p>
+                              {selectedDonation.status === 'pending' ? (
+                                <input
+                                  type="number"
+                                  min="0"
+                                  max={medicine.requestedQuantity ?? medicine.quantity}
+                                  className="input py-0 px-2 h-7 w-20 text-sm"
+                                  value={medicine.quantity === 0 ? '' : medicine.quantity}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    const maxQty = medicine.requestedQuantity ?? medicine.quantity;
+                                    let newQty = val === '' ? 0 : parseInt(val);
+                                    if (isNaN(newQty)) newQty = 0;
+                                    // Cannot confirm more than what was requested
+                                    if (newQty > maxQty) newQty = maxQty;
+                                    const updatedDonation = { ...selectedDonation };
+                                    if (updatedDonation.medicines && updatedDonation.medicines[index]) {
+                                      updatedDonation.medicines[index].quantity = newQty;
+                                      setSelectedDonation(updatedDonation);
+                                    }
+                                  }}
+                                />
+                              ) : (
+                                <span className="text-sm font-medium">{medicine.quantity}</span>
+                              )}
+                            </div>
+                            {/* Balance calculation when NGO enters a partial quantity */}
+                            {selectedDonation.status === 'pending' && medicine.requestedQuantity && medicine.requestedQuantity > medicine.quantity && (
+                              <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-300">
+                                Patient keeps: {medicine.requestedQuantity - medicine.quantity}
+                              </span>
                             )}
-                            <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">
-                              • Expires: {formatDate(medicine.expiryDate)}
-                            </span>
                           </div>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                            Expires: {formatDate(medicine.expiryDate)}
+                          </p>
                         </div>
-                        <div className="text-right">
+                        <div className="text-right ml-4">
                           <p className="text-sm text-gray-600 dark:text-gray-400">
                             Batch: {medicine.batchNumber || 'N/A'}
                           </p>

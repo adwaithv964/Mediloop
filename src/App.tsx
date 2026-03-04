@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Toaster } from 'react-hot-toast';
 import { useAuthStore } from './store/useAuthStore';
 import { useThemeStore } from './store/useThemeStore';
+import { usePlatformStore } from './store/usePlatformStore';
 import { initializeSampleData } from './db';
 import MedicineAssistant from './components/MedicineAssistant';
 import { SyncService } from './services/syncService';
@@ -48,8 +49,9 @@ import NGOProfile from './pages/ngo/Profile';
 import NotFound from './pages/NotFound';
 
 function App() {
-  const { isAuthenticated, user, initialize } = useAuthStore();
+  const { isAuthenticated, isLoading, user, initialize } = useAuthStore();
   const { theme, elderlyMode } = useThemeStore();
+  const { loadFromServer } = usePlatformStore();
 
   useEffect(() => {
     // Apply theme
@@ -68,8 +70,25 @@ function App() {
   }, [theme, elderlyMode]);
 
   useEffect(() => {
-    // Initialize database with sample data
+    // One-time clear of all stale localStorage keys from the old architecture
+    // Preserve mediloop_role_* keys so offline auth fallback works on refresh
+    const CLEARED_KEY = 'mediloop-v2-cleared';
+    if (!localStorage.getItem(CLEARED_KEY)) {
+      const preserved: Record<string, string> = {};
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i)!;
+        if (k.startsWith('mediloop_role_')) preserved[k] = localStorage.getItem(k)!;
+      }
+      localStorage.clear();
+      Object.entries(preserved).forEach(([k, v]) => localStorage.setItem(k, v));
+      localStorage.setItem(CLEARED_KEY, '1');
+    }
+
+    // Initialize database sample data (NGOs/Hospitals)
     initializeSampleData();
+
+    // Load platform config fresh from server (no localStorage persistence)
+    loadFromServer();
 
     // Initialize Sync Service
     SyncService.init();
@@ -79,10 +98,23 @@ function App() {
       Notification.requestPermission();
     }
 
-    // Initialize Auth Listener
+    // Initialize Auth Listener (Firebase — fetches user from MongoDB)
     const unsubscribe = initialize();
     return () => unsubscribe();
   }, []);
+
+  // While Firebase is resolving the session (onAuthStateChanged async),
+  // show a spinner — do NOT render routes yet or the router will redirect to /login.
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-14 w-14 border-b-2 border-primary-600 mx-auto mb-4" />
+          <p className="text-gray-500 dark:text-gray-400 text-sm">Loading Mediloop…</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
@@ -139,7 +171,7 @@ function App() {
                 <Route path="/analytics" element={<Analytics />} />
                 <Route path="/logs" element={<SystemLogs />} />
                 <Route path="/system" element={<SystemSettings />} />
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/" element={<Navigate to="/admin" replace />} />
               </>
             )}
 

@@ -11,7 +11,8 @@ const donationSchema = new mongoose.Schema({
     medicines: [{
         medicineId: String,
         name: String,
-        quantity: Number,
+        quantity: Number,            // Confirmed quantity (NGO may reduce this)
+        requestedQuantity: Number,   // Original quantity patient wanted to donate
         expiryDate: Date,
         batchNumber: String
     }],

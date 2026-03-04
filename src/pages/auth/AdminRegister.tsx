@@ -1,9 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { UserPlus, ShieldAlert } from 'lucide-react';
-import { db } from '../../db';
 import toast from 'react-hot-toast';
-import { generateId } from '../../utils/helpers';
 import { createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 import { auth } from '../../config/firebase';
 
@@ -25,28 +23,16 @@ export default function AdminRegister() {
             return;
         }
 
-        // Optional: Secret key check for extra safety in dev
-        // if (formData.secretKey !== 'mediloop_admin') {
-        //   toast.error('Invalid Secret Key');
-        //   return;
-        // }
-
         try {
-            const existingUser = await db.users.where('email').equals(formData.email).first();
-            if (existingUser) {
-                toast.error('Email already registered');
-                return;
-            }
+            // 1. Create in Firebase
+            const credential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
 
-            // Create in Firebase
-            await createUserWithEmailAndPassword(auth, formData.email, formData.password);
-
-            // Create in Local DB explicitly as ADMIN
+            // 2. Build admin user with Firebase UID
             const newUser = {
-                id: generateId('user-'),
+                id: credential.user.uid,
                 email: formData.email,
                 name: formData.name,
-                role: 'admin' as const, // Forced Admin Role
+                role: 'admin' as const,
                 createdAt: new Date(),
                 updatedAt: new Date(),
                 preferences: {
@@ -58,9 +44,16 @@ export default function AdminRegister() {
                 },
             };
 
-            await db.users.add(newUser);
+            // 3. Save to MongoDB (source of truth for role verification)
+            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const base = isLocal ? 'http://localhost:5000' : 'https://mediloop-backend.onrender.com';
+            await fetch(`${base}/api/sync`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ users: [newUser] }),
+            });
 
-            // Sign out immediately to force login via Admin Login page
+            // Sign out immediately — admin must log in via Admin Login page
             await signOut(auth);
 
             toast.success('Admin Account Created! Please Login.');

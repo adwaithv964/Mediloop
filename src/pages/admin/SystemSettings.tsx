@@ -12,13 +12,13 @@ import {
   Upload,
   Key,
   Globe,
-  Mail,
-  Smartphone,
   Users,
   Heart
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import axios from 'axios';
+import { usePlatformStore } from '../../store/usePlatformStore';
+import { API_URL } from '../../config/api';
 
 interface SystemConfig {
   notifications: {
@@ -50,6 +50,12 @@ interface SystemConfig {
 }
 
 export default function SystemSettings() {
+  const [saving, setSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState<'notifications' | 'platform' | 'security' | 'database'>('notifications');
+  const { setConfig: setPlatformConfig, config: platformStoreConfig } = usePlatformStore();
+
+  // Seed platform section from the store (which reads localStorage) so toggles
+  // are correct immediately on mount without waiting for the server fetch.
   const [config, setConfig] = useState<SystemConfig>({
     notifications: {
       emailEnabled: true,
@@ -59,11 +65,12 @@ export default function SystemSettings() {
       expiryWarningDays: 7,
     },
     platform: {
-      maintenanceMode: false,
-      registrationEnabled: true,
-      donationEnabled: true,
-      maxUsersPerDay: 100,
-      maxDonationsPerUser: 10,
+      // Seed directly from the store — it already read from localStorage
+      maintenanceMode: platformStoreConfig.maintenanceMode,
+      registrationEnabled: platformStoreConfig.registrationEnabled,
+      donationEnabled: platformStoreConfig.donationEnabled,
+      maxUsersPerDay: platformStoreConfig.maxUsersPerDay,
+      maxDonationsPerUser: platformStoreConfig.maxDonationsPerUser,
     },
     security: {
       sessionTimeout: 24,
@@ -79,23 +86,22 @@ export default function SystemSettings() {
     },
   });
 
-  const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'notifications' | 'platform' | 'security' | 'database'>('notifications');
-
-  useEffect(() => {
-    fetchSettings();
-  }, []);
-
   const fetchSettings = async () => {
     try {
-      // In a real app we'd use the configured base URL
-      const response = await axios.get('http://localhost:5000/api/admin/settings', { withCredentials: true });
-      setConfig(response.data);
+      const response = await axios.get(`${API_URL}/api/admin/settings`, { withCredentials: true });
+      // Only merge platform section if the server has persisted data (_persisted: true)
+      // Otherwise keep the localStorage-seeded values we already have.
+      if (response.data?._persisted) {
+        setConfig(response.data);
+      }
     } catch (error) {
       console.error('Error fetching settings:', error);
-      toast.error('Failed to load settings');
+      // Server offline — keep localStorage-seeded values
     }
   };
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchSettings(); }, []);
 
   const handleConfigChange = (section: keyof SystemConfig, field: string, value: any) => {
     setConfig(prev => ({
@@ -110,12 +116,15 @@ export default function SystemSettings() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await axios.post('http://localhost:5000/api/admin/settings', config, { withCredentials: true });
-      toast.success('Settings saved successfully');
+      await axios.post(`${API_URL}/api/admin/settings`, config, { withCredentials: true });
     } catch (error) {
-      console.error('Error saving settings:', error);
-      toast.error('Failed to save settings');
+      console.error('Error saving settings to server:', error);
+      // Server unreachable — continue and apply locally
     } finally {
+      // Always sync platform settings into the global store (persists to localStorage
+      // and broadcasts to all open tabs via the storage event)
+      setPlatformConfig(config.platform);
+      toast.success('Settings saved successfully');
       setSaving(false);
     }
   };
@@ -269,45 +278,6 @@ export default function SystemSettings() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <Mail className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                      <div>
-                        <p className="font-medium text-gray-900 dark:text-white">Email Notifications</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Send notifications via email</p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => handleConfigChange('notifications', 'emailEnabled', !config.notifications.emailEnabled)}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${config.notifications.emailEnabled ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'
-                        }`}
-                    >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${config.notifications.emailEnabled ? 'translate-x-6' : 'translate-x-1'
-                          }`}
-                      />
-                    </button>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <Smartphone className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                      <div>
-                        <p className="font-medium text-gray-900 dark:text-white">SMS Notifications</p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Send notifications via SMS</p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => handleConfigChange('notifications', 'smsEnabled', !config.notifications.smsEnabled)}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${config.notifications.smsEnabled ? 'bg-primary-600' : 'bg-gray-200 dark:bg-gray-700'
-                        }`}
-                    >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${config.notifications.smsEnabled ? 'translate-x-6' : 'translate-x-1'
-                          }`}
-                      />
-                    </button>
-                  </div>
 
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
@@ -450,6 +420,31 @@ export default function SystemSettings() {
                       max="100"
                     />
                   </div>
+                </div>
+
+                {/* Emergency reset — clears all restrictions immediately */}
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-2">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                    Use this if settings are stuck — it immediately restores safe defaults.
+                  </p>
+                  <button
+                    onClick={() => {
+                      const safeDefaults = {
+                        maintenanceMode: false,
+                        registrationEnabled: true,
+                        donationEnabled: true,
+                        maxUsersPerDay: 100,
+                        maxDonationsPerUser: 10,
+                      };
+                      setConfig(prev => ({ ...prev, platform: safeDefaults }));
+                      setPlatformConfig(safeDefaults);
+                      toast.success('Platform settings reset to safe defaults');
+                    }}
+                    className="btn bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800/40 text-sm"
+                  >
+                    <RefreshCw size={15} />
+                    <span>Emergency Reset to Safe Defaults</span>
+                  </button>
                 </div>
               </div>
             </div>

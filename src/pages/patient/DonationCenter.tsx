@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
-import { Heart, MapPin, Phone, Mail, Clock, CheckCircle, Package, Trash2, Edit2, X } from 'lucide-react';
+import { Heart, MapPin, Phone, Mail, Clock, CheckCircle, Package, Trash2, Edit2, X, HeartOff } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { db } from '../../db';
 import { Medicine, NGO, Hospital, Donation } from '../../types';
 import { generateId, calculateDistance, formatDate } from '../../utils/helpers';
 import toast from 'react-hot-toast';
 import { API_URL } from '../../config/api';
+import { usePlatformStore } from '../../store/usePlatformStore';
 
 export default function DonationCenter() {
   const { user } = useAuthStore();
+  const { config } = usePlatformStore();
   const [medicines, setMedicines] = useState<Medicine[]>([]);
   const [ngos, setNgos] = useState<NGO[]>([]);
   const [hospitals, setHospitals] = useState<Hospital[]>([]);
@@ -77,10 +79,67 @@ export default function DonationCenter() {
           medicines: d.medicines || []
         }));
         setMyDonations(parsedDonations);
+
+        // Smart quantity deduction: deduct only the NGO-confirmed quantity from local inventory
+        await processConfirmedDonations(parsedDonations);
       }
     } catch (error) {
       console.error("Failed to load donations", error);
       toast.error("Failed to load donation history");
+    }
+  };
+
+  /**
+   * Processes confirmed donations and deducts only the confirmed (possibly reduced) quantity
+   * from the patient's local medicine inventory. Uses localStorage to ensure deduction
+   * only happens once per donation.
+   *
+   * Example: Patient offered 25, NGO confirmed 20 → deduct 20, patient keeps 5.
+   */
+  const processConfirmedDonations = async (donations: Donation[]) => {
+    const processedKey = `mediloop_processed_donations_${user?.id}`;
+    const processedIds: string[] = JSON.parse(localStorage.getItem(processedKey) || '[]');
+
+    const confirmedDonations = donations.filter(
+      (d) => (d.status === 'confirmed' || d.status === 'picked-up' || d.status === 'completed')
+        && !processedIds.includes(d.id)
+    );
+
+    if (confirmedDonations.length === 0) return;
+
+    for (const donation of confirmedDonations) {
+      for (const med of donation.medicines) {
+        const confirmedQty = med.quantity; // NGO may have reduced this
+        if (!med.medicineId || confirmedQty <= 0) continue;
+
+        try {
+          const existingMed = await db.medicines.get(med.medicineId);
+          if (existingMed) {
+            const newQty = Math.max(0, existingMed.quantity - confirmedQty);
+            await db.medicines.update(med.medicineId, {
+              quantity: newQty,
+              updatedAt: new Date()
+            });
+          }
+        } catch (err) {
+          console.error(`Failed to update medicine ${med.medicineId}:`, err);
+        }
+      }
+
+      // Mark this donation as processed so we don't double-deduct
+      processedIds.push(donation.id);
+    }
+
+    localStorage.setItem(processedKey, JSON.stringify(processedIds));
+
+    if (confirmedDonations.length > 0) {
+      // Reload medicines to reflect updated quantities
+      const meds = await db.medicines
+        .where('userId')
+        .equals(user?.id || '')
+        .filter((m) => m.expiryDate > new Date())
+        .toArray();
+      setMedicines(meds);
     }
   };
 
@@ -200,6 +259,17 @@ export default function DonationCenter() {
       return;
     }
 
+    // Enforce max donations per user limit (only for new donations, not edits)
+    if (!editingId) {
+      const activeDonations = myDonations.filter(d =>
+        ['pending', 'confirmed', 'picked-up'].includes(d.status)
+      );
+      if (activeDonations.length >= config.maxDonationsPerUser) {
+        toast.error(`You can have at most ${config.maxDonationsPerUser} active donation(s) at a time. Please wait for existing ones to complete.`);
+        return;
+      }
+    }
+
     if (!preciseLocation && !editingId) {
       toast.error('Please capture your location first');
       return;
@@ -211,7 +281,8 @@ export default function DonationCenter() {
         .map((m) => ({
           medicineId: m.id,
           name: m.name,
-          quantity: selectedQuantities[m.id] || m.quantity, // Use selected quantity
+          quantity: selectedQuantities[m.id] || m.quantity, // Starts as requested qty; NGO may reduce
+          requestedQuantity: selectedQuantities[m.id] || m.quantity, // Always store original request
           expiryDate: m.expiryDate,
           batchNumber: m.batchNumber,
         }));
@@ -280,6 +351,29 @@ export default function DonationCenter() {
   const sortedOrgs = organizations
     .map(getOrgWithDistance)
     .sort((a, b) => a.distance - b.distance);
+
+  // Gate: donation system disabled by admin
+  if (!config.donationEnabled) {
+    return (
+      <div className="space-y-6 fade-in">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Donation Center</h1>
+          <p className="text-gray-600 dark:text-gray-400">Donate unused medicines to help those in need</p>
+        </div>
+        <div className="card text-center py-16">
+          <div className="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-6">
+            <HeartOff className="w-10 h-10 text-gray-400" />
+          </div>
+          <h2 className="text-2xl font-semibold text-gray-700 dark:text-gray-200 mb-3">
+            Donation System Unavailable
+          </h2>
+          <p className="text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
+            Medicine donations have been temporarily disabled by the administrator. Please check back later.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 fade-in">
@@ -485,10 +579,15 @@ export default function DonationCenter() {
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
                     <input
-                      type="text"
+                      type="tel"
                       value={contactPhone}
-                      onChange={(e) => setContactPhone(e.target.value)}
-                      placeholder="+91 99999 99999"
+                      onChange={(e) => {
+                        // Allow only digits, max 10
+                        const digits = e.target.value.replace(/\D/g, '').slice(0, 10);
+                        setContactPhone(digits);
+                      }}
+                      placeholder="10-digit mobile number"
+                      maxLength={10}
                       className="input pl-10 w-full"
                     />
                   </div>
@@ -603,12 +702,33 @@ export default function DonationCenter() {
                         <Package size={16} className="mr-2" />
                         <span className="font-medium">Medicines:</span>
                       </div>
-                      <ul className="list-disc list-inside ml-5 space-y-1">
-                        {donation.medicines.map((m, idx) => (
-                          <li key={idx}>
-                            {m.name} <span className="font-semibold text-primary-600 dark:text-primary-400">(Qty: {m.quantity})</span>
-                          </li>
-                        ))}
+                      <ul className="list-none ml-1 space-y-2">
+                        {donation.medicines.map((m, idx) => {
+                          const requested = m.requestedQuantity ?? m.quantity;
+                          const confirmed = m.quantity;
+                          const balance = requested - confirmed;
+                          const isPartial = donation.status !== 'pending' && balance > 0;
+                          return (
+                            <li key={idx} className="p-2 rounded-lg bg-gray-50 dark:bg-gray-700/50">
+                              <span className="font-medium text-gray-800 dark:text-gray-200">{m.name}</span>
+                              <div className="flex flex-wrap gap-2 mt-1">
+                                <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300">
+                                  Requested: {requested}
+                                </span>
+                                {donation.status !== 'pending' && (
+                                  <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300">
+                                    Confirmed: {confirmed}
+                                  </span>
+                                )}
+                                {isPartial && (
+                                  <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-300">
+                                    Balance kept: {balance}
+                                  </span>
+                                )}
+                              </div>
+                            </li>
+                          );
+                        })}
                       </ul>
                     </div>
                     {donation.pickupDate && (

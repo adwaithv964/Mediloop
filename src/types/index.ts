@@ -100,7 +100,8 @@ export interface Donation {
 export interface DonationMedicine {
   medicineId: string;
   name: string;
-  quantity: number;
+  quantity: number;         // Confirmed quantity (may be less than requested after NGO review)
+  requestedQuantity?: number; // Original quantity patient wanted to donate
   expiryDate: Date;
   batchNumber?: string;
 }

@@ -42,11 +42,11 @@ export const db = new MediloopDB();
 
 // Initialize with sample data
 export async function initializeSampleData() {
-  const userCount = await db.users.count();
+  const ngoCount = await db.ngos.count();
 
-  if (userCount === 0) {
-    // Add sample NGOs
-    await db.ngos.bulkAdd([
+  if (ngoCount === 0) {
+    // Add sample NGOs (bulkPut = upsert, never throws on duplicates)
+    await db.ngos.bulkPut([
       {
         id: 'ngo-1',
         name: 'HealthCare Foundation',
@@ -76,7 +76,7 @@ export async function initializeSampleData() {
     ]);
 
     // Add sample Hospitals
-    await db.hospitals.bulkAdd([
+    await db.hospitals.bulkPut([
       {
         id: 'hosp-1',
         name: 'City General Hospital',

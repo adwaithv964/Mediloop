@@ -5,9 +5,13 @@ import { db } from '../../db';
 import toast from 'react-hot-toast';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { auth } from '../../config/firebase';
+import { useAuthStore, setAdminLoginFlag } from '../../store/useAuthStore';
+import { API_URL } from '../../config/api';
+import type { User } from '../../types';
 
 export default function AdminLogin() {
     const navigate = useNavigate();
+    const { login } = useAuthStore();
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -17,22 +21,99 @@ export default function AdminLogin() {
         e.preventDefault();
 
         try {
-            // 1. Login with Firebase
+            // Signal to useAuthStore.initialize() that admin login is underway.
+            // This stops onAuthStateChanged from racing ahead and overwriting the role.
+            setAdminLoginFlag(true);
+
+            // 1. Login with Firebase (triggers onAuthStateChanged, which will be blocked by flag above)
             const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
+            const firebaseToken = await userCredential.user.getIdToken();
 
-            // 2. Check role in local DB
-            const user = await db.users.where('email').equals(userCredential.user.email!).first();
+            // 2. Check role — try local Dexie first, then backend as fallback
+            let isAdmin = false;
+            const localUser = await db.users.where('email').equals(userCredential.user.email!).first();
 
-            if (!user || user.role !== 'admin') {
-                // Not an admin
+            if (localUser) {
+                isAdmin = localUser.role === 'admin';
+            } else {
+                // Fallback: verify against backend (handles cases where local DB was cleared)
+                try {
+                    const isLocal =
+                        window.location.hostname === 'localhost' ||
+                        window.location.hostname === '127.0.0.1';
+                    const base = isLocal
+                        ? 'http://localhost:5000'
+                        : 'https://mediloop-backend.onrender.com';
+
+                    const res = await fetch(`${base}/api/admin/verify`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${firebaseToken}`,
+                        },
+                    });
+                    if (res.ok) {
+                        isAdmin = true;
+                    }
+                } catch {
+                    // Backend unreachable — fall through to denial
+                }
+            }
+
+            if (!isAdmin) {
                 await signOut(auth);
                 toast.error('Access Denied: Admin privileges required.');
                 return;
             }
 
+            // Build admin user object with role: 'admin' (source of truth for this session)
+            // Try MongoDB first, fall back to local + Firebase data
+            let adminUser: User;
+            try {
+                const res = await fetch(`${API_URL}/api/sync/user-by-email?email=${encodeURIComponent(formData.email)}`);
+                if (res.ok) {
+                    const mongoUser = await res.json();
+                    // Always enforce admin role — MongoDB record may be stale
+                    adminUser = { ...mongoUser, role: 'admin' as const };
+                    // Patch MongoDB if the role was wrong
+                    if (mongoUser.role !== 'admin') {
+                        fetch(`${API_URL}/api/sync`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ users: [adminUser] }),
+                        }).catch(() => {/* non-critical */ });
+                    }
+                } else {
+                    throw new Error('not in mongo');
+                }
+            } catch {
+                // Fallback: build from Dexie local data + Firebase
+                adminUser = {
+                    id: userCredential.user.uid,
+                    email: userCredential.user.email!,
+                    name: localUser?.name || userCredential.user.displayName || formData.email.split('@')[0],
+                    role: 'admin' as const,
+                    createdAt: new Date(userCredential.user.metadata.creationTime || Date.now()),
+                    updatedAt: new Date(),
+                    preferences: localUser?.preferences || {
+                        theme: 'light' as const,
+                        elderlyMode: false,
+                        notificationsEnabled: true,
+                        voiceEnabled: false,
+                        language: 'en',
+                    },
+                };
+            }
+
+            // Set user in store immediately with role: 'admin', then clear the flag
+            login(adminUser);
+            setAdminLoginFlag(false);
+
             toast.success('Welcome back, Admin!');
             navigate('/admin');
         } catch (error: any) {
+            // Always clear the flag on error so normal logins aren't blocked
+            setAdminLoginFlag(false);
             console.error('Admin Login error:', error);
             toast.error('Login failed. Please check your credentials.');
         }
@@ -81,15 +162,6 @@ export default function AdminLogin() {
                 </button>
             </form>
 
-            <p className="text-center mt-6 text-sm text-gray-600 dark:text-gray-400">
-                Need to set up a new admin?{' '}
-                <Link
-                    to="/admin/register"
-                    className="text-primary-600 hover:text-primary-700 font-medium"
-                >
-                    Register Admin
-                </Link>
-            </p>
             <p className="text-center mt-2 text-sm text-gray-600 dark:text-gray-400">
                 <Link
                     to="/login"

@@ -1,15 +1,17 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { UserPlus } from 'lucide-react';
-import { db } from '../../db';
+import { UserPlus, ShieldOff } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { generateId } from '../../utils/helpers';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../config/firebase';
+import { usePlatformStore } from '../../store/usePlatformStore';
+import { useAuthStore } from '../../store/useAuthStore';
+import { API_URL } from '../../config/api';
 
 export default function Register() {
   const navigate = useNavigate();
-  // const { login } = useAuthStore(); // Unused
+  const { config } = usePlatformStore();
+  const { login } = useAuthStore();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -27,23 +29,12 @@ export default function Register() {
     }
 
     try {
-      // 1. Check if user already exists in local DB (optional, but good for consistency)
-      const existingUser = await db.users
-        .where('email')
-        .equals(formData.email)
-        .first();
+      // 1. Create in Firebase
+      const credential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
 
-      if (existingUser) {
-        toast.error('Email already registered');
-        return;
-      }
-
-      // 2. Create in Firebase
-      await createUserWithEmailAndPassword(auth, formData.email, formData.password);
-
-      // 3. Create in Local DB
+      // 2. Build user object
       const newUser = {
-        id: generateId('user-'), // Use local ID generation for now to keep compatibility
+        id: credential.user.uid,        // Use Firebase UID as the canonical ID
         email: formData.email,
         name: formData.name,
         role: formData.role,
@@ -58,10 +49,15 @@ export default function Register() {
         },
       };
 
-      await db.users.add(newUser);
+      // 3. Save to MongoDB (primary source of truth)
+      await fetch(`${API_URL}/api/sync`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ users: [newUser] }),
+      });
 
-      // 4. Update Store (Login logic handles this via listener, but we can optimistically set)
-      // login(newUser); // The listener in useAuthStore should handle this
+      // 4. Set user in auth store immediately so role-based routing works
+      login(newUser);
 
       toast.success('Account created successfully!');
       navigate('/dashboard');
@@ -76,6 +72,24 @@ export default function Register() {
       toast.error(errorMessage);
     }
   };
+
+  // Block registration if admin has disabled it
+  if (!config.registrationEnabled) {
+    return (
+      <div className="card text-center">
+        <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+          <ShieldOff className="w-8 h-8 text-red-500" />
+        </div>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Registration Closed</h2>
+        <p className="text-gray-500 dark:text-gray-400 mb-6">
+          New user registration is currently disabled by the administrator.
+        </p>
+        <Link to="/login" className="btn btn-primary">
+          Go to Login
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="card">
